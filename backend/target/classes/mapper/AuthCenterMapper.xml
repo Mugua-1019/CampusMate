@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campusmate.mapper.AuthCenterMapper">
+
+    <select id="selectProfile" resultType="com.campusmate.domain.entity.UserProfile">
+        select
+            user_id,
+            avatar_url,
+            nickname,
+            gender,
+            grade,
+            college,
+            major,
+            interest_tags,
+            bio,
+            real_name,
+            verified,
+            verify_status
+        from user_profile
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="countPendingCampusRecord" resultType="int">
+        select count(1)
+        from auth_center_record
+        where user_id = #{userId}
+          and auth_type = 'campus'
+          and status = 'pending'
+    </select>
+
+    <insert id="insertRecord" parameterType="com.campusmate.domain.entity.AuthCenterRecord" useGeneratedKeys="true" keyProperty="recordId">
+        insert into auth_center_record
+        (user_id, auth_type, school, student_no, real_name, identity_type, phone, material_name, material_url, status, feedback, action_text, submitted_at)
+        values
+        (#{userId}, #{authType}, #{school}, #{studentNo}, #{realName}, #{identityType}, #{phone}, #{materialName}, #{materialUrl}, #{status}, #{feedback}, #{actionText}, #{submittedAt})
+    </insert>
+
+    <select id="selectRecords" resultType="com.campusmate.domain.entity.AuthCenterRecord">
+        select
+            record_id,
+            user_id,
+            auth_type,
+            school,
+            student_no,
+            real_name,
+            identity_type,
+            phone,
+            material_name,
+            material_url,
+            status,
+            feedback,
+            action_text,
+            submitted_at,
+            reviewed_at
+        from auth_center_record
+        where user_id = #{userId}
+        order by submitted_at desc, record_id desc
+    </select>
+
+    <select id="selectBenefits" resultType="com.campusmate.domain.vo.AuthCenterVO$BenefitVO">
+        select
+            label,
+            icon_key as icon
+        from auth_center_benefit
+        where enabled = 1
+        order by sort_weight, benefit_id
+    </select>
+
+    <select id="selectSamples" resultType="com.campusmate.domain.vo.AuthCenterVO$SampleVO">
+        select
+            label,
+            tone
+        from auth_center_material_sample
+        where enabled = 1
+        order by sort_weight, sample_id
+    </select>
+
+    <select id="selectRights" resultType="com.campusmate.domain.vo.AuthCenterVO$RightVO">
+        select
+            title,
+            description,
+            icon_key as icon
+        from auth_center_right
+        where enabled = 1
+        order by sort_weight, right_id
+    </select>
+
+    <insert id="insertPhoneCode" parameterType="com.campusmate.domain.entity.AuthCenterPhoneCode" useGeneratedKeys="true" keyProperty="codeId">
+        insert into auth_center_phone_code
+        (user_id, phone, code, used, expires_at)
+        values
+        (#{userId}, #{phone}, #{code}, #{used}, #{expiresAt})
+    </insert>
+
+    <select id="selectLatestPhoneCode" resultType="com.campusmate.domain.entity.AuthCenterPhoneCode">
+        select
+            code_id,
+            user_id,
+            phone,
+            code,
+            used,
+            expires_at
+        from auth_center_phone_code
+        where user_id = #{userId}
+          and phone = #{phone}
+          and used = 0
+          and expires_at &gt;= #{now}
+        order by code_id desc
+        limit 1
+    </select>
+
+    <update id="markPhoneCodeUsed">
+        update auth_center_phone_code
+        set used = 1
+        where code_id = #{codeId}
+          and used = 0
+    </update>
+
+    <update id="updateAccountPhone">
+        update user_account
+        set phone = #{phone}
+        where user_id = #{userId}
+    </update>
+</mapper>

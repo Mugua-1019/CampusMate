@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campusmate.mapper.HomeConfigMapper">
+
+    <select id="selectTabs" resultType="com.campusmate.domain.entity.HomePlazaTab">
+        select
+            plaza_key,
+            label,
+            description
+        from home_plaza_tab
+        where enabled = 1
+        order by sort_weight asc, id asc
+    </select>
+
+    <select id="selectCategories" resultType="com.campusmate.domain.entity.HomePlazaCategory">
+        select
+            plaza_key,
+            category_name
+        from home_plaza_category
+        where enabled = 1
+        order by plaza_key asc, sort_weight asc, id asc
+    </select>
+
+    <select id="selectUserSummary" resultType="com.campusmate.domain.entity.HomeUserSummary">
+        select
+            s.user_id,
+            p.verified,
+            coalesce(p.nickname, s.nickname) as nickname,
+            p.avatar_url
+        from home_user_summary s
+        left join user_profile p on p.user_id = s.user_id
+        where s.user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectUserStats" resultType="com.campusmate.domain.entity.HomeUserStat">
+        select
+            user_id,
+            stat_label,
+            stat_value
+        from home_user_stat
+        where user_id = #{userId}
+        order by sort_weight asc, id asc
+    </select>
+
+    <select id="selectPendingMeet" resultType="com.campusmate.domain.entity.HomePendingMeet">
+        select
+            user_id,
+            title,
+            partner,
+            category,
+            meet_time,
+            location,
+            status
+        from home_pending_meet
+        where user_id = #{userId}
+          and active = 1
+        order by id desc
+        limit 1
+    </select>
+</mapper>

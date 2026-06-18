@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campusmate.mapper.HomePostMapper">
+
+    <select id="selectVisiblePosts" resultType="com.campusmate.domain.entity.HomePost">
+        select
+            id,
+            plaza,
+            category,
+            title,
+            status,
+            tags,
+            description,
+            expected_time,
+            expected_location,
+            publisher_name,
+            avatar_text,
+            anonymous,
+            verified,
+            current_count,
+            max_count
+        from home_post
+        where deleted = 0
+          and review_status = 'visible'
+          and plaza = #{query.plaza}
+        <if test="query.category != null and query.category != '' and query.category != '全部'">
+          and category = #{query.category}
+        </if>
+        <if test="query.keyword != null and query.keyword != ''">
+          and (
+              title like concat('%', #{query.keyword}, '%')
+              or description like concat('%', #{query.keyword}, '%')
+              or expected_location like concat('%', #{query.keyword}, '%')
+              or publisher_name like concat('%', #{query.keyword}, '%')
+              or tags like concat('%', #{query.keyword}, '%')
+          )
+        </if>
+        order by sort_weight desc, id desc
+        limit 20
+    </select>
+</mapper>

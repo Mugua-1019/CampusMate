@@ -1,0 +1,10 @@
+com\campusmate\service\AuthServiceImplTest$FakeAuthMapper.class
+com\campusmate\service\AuthServiceImplTest$FakeProfileMapper.class
+com\campusmate\service\HomeServiceImplTest$CapturingHomePostMapper.class
+com\campusmate\service\AuthCenterServiceImplTest.class
+com\campusmate\service\AuthCenterServiceImplTest$FakeAuthCenterMapper.class
+com\campusmate\service\HomeServiceImplTest.class
+com\campusmate\service\ProfileServiceImplTest.class
+com\campusmate\service\HomeServiceImplTest$FakeHomeConfigMapper.class
+com\campusmate\service\AuthServiceImplTest.class
+com\campusmate\service\ProfileServiceImplTest$FakeProfileMapper.class

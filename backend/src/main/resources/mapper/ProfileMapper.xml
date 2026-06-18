@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campusmate.mapper.ProfileMapper">
+
+    <select id="selectByUserId" resultType="com.campusmate.domain.entity.UserProfile">
+        select
+            user_id,
+            avatar_url,
+            nickname,
+            gender,
+            grade,
+            college,
+            major,
+            interest_tags,
+            bio,
+            real_name,
+            verified,
+            verify_status
+        from user_profile
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectAccountByUserId" resultType="java.lang.String">
+        select account
+        from user_account
+        where user_id = #{userId}
+          and enabled = 1
+        limit 1
+    </select>
+
+    <insert id="insertDefaultProfile" parameterType="com.campusmate.domain.entity.UserProfile">
+        insert into user_profile
+        (user_id, avatar_url, nickname, gender, grade, college, major, interest_tags, bio, real_name, verified, verify_status)
+        values
+        (#{userId}, #{avatarUrl}, #{nickname}, #{gender}, #{grade}, #{college}, #{major}, #{interestTags}, #{bio}, #{realName}, 0, 'unverified')
+    </insert>
+
+    <update id="updateDisplayProfile" parameterType="com.campusmate.domain.entity.UserProfile">
+        update user_profile
+        set
+            avatar_url = #{avatarUrl},
+            nickname = #{nickname},
+            gender = #{gender},
+            grade = #{grade},
+            college = #{college},
+            major = #{major},
+            interest_tags = #{interestTags},
+            bio = #{bio}
+        where user_id = #{userId}
+    </update>
+
+    <select id="selectCampusVerify" resultType="com.campusmate.domain.vo.ProfileVO$CampusVerifyVO">
+        select
+            title,
+            description,
+            action_text
+        from profile_campus_verify
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectPreferences" resultType="com.campusmate.domain.vo.ProfileVO$PreferenceVO">
+        select
+            label,
+            icon,
+            score,
+            tone
+        from profile_preference
+        where user_id = #{userId}
+        order by sort_weight, id
+    </select>
+
+    <select id="selectActivitySummary" resultType="com.campusmate.domain.vo.ProfileVO$ActivityVO">
+        select
+            activity_score as score,
+            percentile
+        from profile_activity_summary
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectActivityBars" resultType="com.campusmate.domain.vo.ProfileVO$ActivityBarVO">
+        select
+            day_label as day,
+            activity_value as value
+        from profile_activity_bar
+        where user_id = #{userId}
+        order by sort_weight, id
+    </select>
+
+    <select id="selectSafety" resultType="com.campusmate.domain.vo.ProfileVO$SafetyVO">
+        select
+            status_label as status,
+            credit_score,
+            safety_level
+        from profile_safety
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectSafetyItems" resultType="java.lang.String">
+        select item_text
+        from profile_safety_item
+        where user_id = #{userId}
+        order by sort_weight, id
+    </select>
+
+    <select id="selectChats" resultType="com.campusmate.domain.vo.ProfileVO$ChatVO">
+        select
+            avatar_text as avatar,
+            display_name as name,
+            tag,
+            message,
+            display_time as time,
+            unread_count as unread,
+            tone
+        from profile_recent_chat
+        where user_id = #{userId}
+        order by sort_weight, id
+    </select>
+
+    <select id="selectPosts" resultType="com.campusmate.domain.vo.ProfileVO$PostVO">
+        select
+            short_label,
+            title,
+            tag,
+            period,
+            description,
+            location,
+            display_time as time,
+            matched_count as matched,
+            tone
+        from profile_publish
+        where user_id = #{userId}
+        order by sort_weight, id
+    </select>
+</mapper>

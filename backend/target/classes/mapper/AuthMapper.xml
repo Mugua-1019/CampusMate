@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campusmate.mapper.AuthMapper">
+
+    <select id="selectByLoginAccount" resultType="com.campusmate.domain.entity.UserAccount">
+        select
+            user_id,
+            account,
+            phone,
+            email,
+            password_salt,
+            password_hash,
+            enabled
+        from user_account
+        where account = #{account}
+           or phone = #{account}
+           or email = #{account}
+        limit 1
+    </select>
+
+    <select id="countByLoginAccount" resultType="int">
+        select count(1)
+        from user_account
+        where account = #{account}
+           or phone = #{account}
+           or email = #{account}
+    </select>
+
+    <insert id="insertAccount" parameterType="com.campusmate.domain.entity.UserAccount" useGeneratedKeys="true" keyProperty="userId">
+        insert into user_account
+        (account, phone, email, password_salt, password_hash, enabled)
+        values
+        (#{account}, #{phone}, #{email}, #{passwordSalt}, #{passwordHash}, #{enabled})
+    </insert>
+
+    <insert id="insertProfile" parameterType="com.campusmate.domain.entity.UserProfile">
+        insert into user_profile
+        (user_id, avatar_url, nickname, verified, verify_status)
+        values
+        (#{userId}, #{avatarUrl}, #{nickname}, #{verified}, #{verifyStatus})
+    </insert>
+
+    <insert id="insertHomeUserSummary">
+        insert into home_user_summary
+        (user_id, verified, nickname)
+        values
+        (#{userId}, 0, #{nickname})
+    </insert>
+
+    <update id="updatePassword">
+        update user_account
+        set
+            password_salt = #{passwordSalt},
+            password_hash = #{passwordHash}
+        where user_id = #{userId}
+    </update>
+</mapper>
