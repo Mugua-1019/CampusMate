@@ -11,7 +11,7 @@
         </div>
 
         <nav class="nav-list" aria-label="主导航">
-          <button v-for="item in navItems" :key="item.label" class="nav-item" :class="{ active: item.active }">
+          <button v-for="item in navItems" :key="item.label" class="nav-item" :class="{ active: item.active }" @click="handleNav(item)">
             <component :is="item.icon" />
             <span>{{ item.label }}</span>
           </button>
@@ -22,32 +22,31 @@
             <img :src="verifyImage" alt="" />
           </div>
           <h2>完善资料，匹配更精准</h2>
-          <button>去完善 <ArrowRight /></button>
+          <button @click="goAuthCenter">去完善 <ArrowRight /></button>
         </section>
       </aside>
 
       <section class="page-body">
         <header class="topbar">
-          <button class="back-button">
+          <button class="back-button" @click="goBack">
             <ArrowLeft />
             返回匹配广场
           </button>
 
           <div class="top-actions">
             <label class="search-box">
-              <input placeholder="搜索需求、活动或用户" />
+              <input v-model="keyword" placeholder="搜索需求、活动或用户" />
               <Search />
             </label>
             <button class="plain-icon" aria-label="我的聊天"><Message /></button>
-            <button class="plain-icon notice-button" aria-label="通知">
-              <Bell />
-              <span>3</span>
-            </button>
-            <button class="profile-chip">
-              <span class="profile-avatar">小</span>
-              <span>待认证</span>
-              <ArrowDown />
-            </button>
+            <NotificationBell />
+            <UserMenu
+              v-if="isLoggedIn"
+              :avatar-url="userAvatar"
+              :avatar-text="userInitial"
+              :status-text="userStatusText"
+            />
+            <button v-else class="login-chip" @click="goLogin">登录</button>
           </div>
         </header>
 
@@ -56,23 +55,19 @@
             <article class="hero-card">
               <div class="cover-placeholder" aria-label="活动头图留空"></div>
               <div class="hero-copy">
-                <span class="category-pill">运动健身</span>
-                <h1>周末篮球同约队友 🏀</h1>
-                <p>想找几个靠谱队友，一起打球流汗，享受周末的快乐时光！</p>
+                <span class="category-pill">{{ post.category || '匹配需求' }}</span>
+                <h1>{{ loading ? '加载中...' : post.title }}</h1>
+                <p>{{ post.description }}</p>
                 <div class="tag-row">
-                  <span>校内活动</span>
-                  <span>篮球</span>
-                  <span>周末</span>
-                  <span>新手友好</span>
+                  <span v-for="tag in post.tags" :key="tag">{{ tag }}</span>
                 </div>
                 <div class="meta-row">
-                  <span>发布者：风一样的少年</span>
-                  <span class="verified-dot">学生认证</span>
-                  <span>发布于 2天前</span>
-                  <span>浏览 128次</span>
+                  <span>发布者：{{ post.publisherName }}</span>
+                  <span class="verified-dot">{{ post.verified ? '学生认证' : '未认证' }}</span>
+                  <span>{{ post.currentCount }}/{{ post.maxCount }}人已参与</span>
                 </div>
               </div>
-              <button class="share-button"><Share /> 分享</button>
+              <button class="share-button" @click="openShareDialog"><Share /> 分享</button>
             </article>
 
             <section class="detail-card">
@@ -83,32 +78,29 @@
 
               <section class="info-block">
                 <h2><Document /> 详细说明</h2>
-                <p>
-                  周末想组织一场篮球局，地点在学校体育馆或者附近的球场都可以。水平不限，主要开心和锻炼身体，
-                  不追求胜负，希望大家能互相尊重、积极配合，一起进步！有意向的小伙伴可以留意活动信息。
-                </p>
+                <p>{{ post.description }}</p>
               </section>
 
               <section class="schedule-grid">
                 <div>
                   <strong><Clock /> 时间安排</strong>
-                  <span>每周六 下午 15:00 - 17:00</span>
+                  <span>{{ post.time }}</span>
                 </div>
                 <div>
                   <strong><Location /> 活动地点</strong>
-                  <span>校体育馆篮球场（室内）</span>
+                  <span>{{ post.location }}</span>
                 </div>
                 <div>
                   <strong><Wallet /> 消费预算</strong>
-                  <span><b>30-50元</b> / 人</span>
+                  <span><b>{{ post.currentCount }} / {{ post.maxCount }}</b> 人</span>
                 </div>
               </section>
 
               <section class="map-row">
                 <div>
                   <h2><MapLocation /> 地点地图</h2>
-                  <p>校体育馆篮球场</p>
-                  <span>距离你约 320m</span>
+                  <p>{{ post.location }}</p>
+                  <span>加入后请与发布者确认具体细节</span>
                 </div>
                 <div class="map-placeholder">
                   <MapLocation />
@@ -135,17 +127,17 @@
             <section class="status-card">
               <div class="status-head">
                 <span>活动状态</span>
-                <strong>待匹配中</strong>
+                <strong>{{ post.full ? '已满员' : '待匹配中' }}</strong>
               </div>
               <div class="progress-count">
                 <span>当前进度</span>
-                <strong>3<em>/5 人</em></strong>
+                <strong>{{ post.currentCount }}<em>/{{ post.maxCount }} 人</em></strong>
               </div>
               <div class="people-row">
-                <UserFilled v-for="index in 3" :key="`active-${index}`" class="active-person" />
-                <UserFilled v-for="index in 2" :key="`empty-${index}`" />
+                <UserFilled v-for="index in activeCount" :key="`active-${index}`" class="active-person" />
+                <UserFilled v-for="index in emptyCount" :key="`empty-${index}`" />
               </div>
-              <p>还差 <b>2</b> 人即可成局</p>
+              <p>还差 <b>{{ emptyCount }}</b> 人即可成局</p>
               <button class="primary-action"><Promotion /> 申请加入</button>
               <button class="secondary-action"><Message /> 私信发布者</button>
             </section>
@@ -153,17 +145,17 @@
             <section class="author-card">
               <h2>发布者信誉</h2>
               <div class="author-row">
-                <span class="author-avatar">风</span>
+                <span class="author-avatar">{{ post.avatarText || '星' }}</span>
                 <div>
-                  <strong>风一样的少年</strong>
-                  <p>大二 · 计算机学院</p>
+                  <strong>{{ post.publisherName }}</strong>
+                  <p>{{ post.anonymous ? '匿名发布' : post.category }}</p>
                 </div>
-                <em>已认证</em>
+                <em>{{ post.verified ? '已认证' : '未认证' }}</em>
               </div>
               <div class="author-stats">
-                <div><strong>6</strong><span>发布数</span></div>
-                <div><strong>4.6</strong><span>信誉评分</span></div>
-                <div><strong>92%</strong><span>响应率</span></div>
+                <div><strong>{{ post.currentCount }}</strong><span>当前人数</span></div>
+                <div><strong>{{ post.maxCount }}</strong><span>目标人数</span></div>
+                <div><strong>{{ progressPercent }}</strong><span>进度</span></div>
               </div>
             </section>
 
@@ -171,7 +163,7 @@
               <div class="blank-shield" aria-label="安全与举报盾牌留空"></div>
               <h2>安全与举报</h2>
               <p>如遇虚假信息、骚扰或不良行为，请及时举报，我们会尽快处理。</p>
-              <button>举报此帖子</button>
+              <button @click="openReportDialog">举报此帖子</button>
             </section>
           </aside>
         </section>
@@ -179,26 +171,91 @@
         <section class="recommend-section">
           <div class="section-title">
             <h2>更多推荐</h2>
-            <button>换一换 <Refresh /></button>
+            <button @click="loadRecommendations">换一换 <Refresh /></button>
           </div>
           <div class="recommend-grid">
-            <article v-for="item in recommendations" :key="item.title" class="recommend-card">
-              <span>{{ item.type }}</span>
+            <article v-for="item in recommendations" :key="item.id" class="recommend-card">
+              <span>{{ item.category }}</span>
               <h3>{{ item.title }}</h3>
-              <p>{{ item.meta }}</p>
+              <p>{{ item.currentCount }}/{{ item.maxCount }}人 · {{ item.time }} · {{ item.location }}</p>
               <footer>
-                <small>发布者：{{ item.author }}</small>
-                <button>去看看</button>
+                <small>发布者：{{ item.publisherName }}</small>
+                <button @click="goPost(item.id)">去看看</button>
               </footer>
             </article>
           </div>
         </section>
       </section>
     </section>
+
+    <div v-if="shareDialogVisible" class="modal-mask" @click.self="shareDialogVisible = false">
+      <section class="action-dialog">
+        <header>
+          <h2>分享帖子</h2>
+          <button aria-label="关闭分享弹窗" @click="shareDialogVisible = false">×</button>
+        </header>
+        <p>复制链接后发给同学，对方可以直接打开这个匹配需求。</p>
+        <label class="copy-box">
+          <input :value="shareLink" readonly />
+          <button @click="copyShareLink">复制</button>
+        </label>
+        <div class="share-preview">
+          <strong>{{ post.title }}</strong>
+          <span>{{ post.category }} · {{ post.currentCount }}/{{ post.maxCount }}人 · {{ post.location }}</span>
+        </div>
+      </section>
+    </div>
+
+    <div v-if="reportDialogVisible" class="modal-mask" @click.self="closeReportDialog">
+      <form class="action-dialog report-dialog" @submit.prevent="submitReport">
+        <header>
+          <h2>举报帖子</h2>
+          <button type="button" aria-label="关闭举报弹窗" @click="closeReportDialog">×</button>
+        </header>
+        <label>
+          <span>举报原因</span>
+          <select v-model="reportForm.reason" required>
+            <option value="">请选择原因</option>
+            <option v-for="reason in reportReasons" :key="reason" :value="reason">{{ reason }}</option>
+          </select>
+        </label>
+        <label>
+          <span>补充说明</span>
+          <textarea v-model="reportForm.detail" maxlength="500" placeholder="请描述你遇到的问题，便于后续管理员处理"></textarea>
+        </label>
+        <label>
+          <span>联系方式</span>
+          <input v-model="reportForm.contact" maxlength="80" placeholder="选填，方便管理员核实" />
+        </label>
+        <footer>
+          <button type="button" class="dialog-secondary" @click="closeReportDialog">取消</button>
+          <button type="submit" class="dialog-primary" :disabled="reportSubmitting">
+            {{ reportSubmitting ? '提交中...' : '提交举报' }}
+          </button>
+        </footer>
+      </form>
+    </div>
+
+    <div v-if="showVerifyTip" class="modal-mask" @click.self="showVerifyTip = false">
+      <section class="action-dialog">
+        <header>
+          <h2>完成校园认证后查看帖子</h2>
+          <button aria-label="关闭认证提示" @click="showVerifyTip = false">×</button>
+        </header>
+        <p>认证后可以查看匹配详情、发起聊天和参与匹配。</p>
+        <footer>
+          <button type="button" class="dialog-secondary" @click="goBack">返回广场</button>
+          <button type="button" class="dialog-primary" @click="goAuthCenter">去认证</button>
+        </footer>
+      </section>
+    </div>
   </main>
 </template>
 
 <script setup>
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import {
   ArrowLeft,
   ArrowDown,
@@ -225,16 +282,41 @@ import {
 } from '@element-plus/icons-vue'
 import logoImage from '../../../assets/images/logo-star-mascot.png'
 import verifyImage from '../../../assets/images/renzheng.png'
+import { fetchHomePlaza, fetchHomePostDetail, submitHomePostReport } from '../../../api/home'
+import { useCurrentUserProfile } from '../../../composables/useCurrentUserProfile'
+import NotificationBell from '../../../components/NotificationBell.vue'
+import UserMenu from '../../../components/UserMenu.vue'
+
+const route = useRoute()
+const router = useRouter()
+const keyword = ref('')
+const loading = ref(false)
+const shareDialogVisible = ref(false)
+const reportDialogVisible = ref(false)
+const reportSubmitting = ref(false)
+const showVerifyTip = ref(false)
+const post = ref({
+  tags: [],
+  currentCount: 0,
+  maxCount: 0
+})
+const recommendations = ref([])
+const reportReasons = ['虚假信息', '骚扰或不当言论', '广告或引流', '风险邀约', '其他问题']
+const reportForm = ref({
+  reason: '',
+  detail: '',
+  contact: ''
+})
 
 const navItems = [
-  { label: '广场首页', icon: HomeFilled, active: true },
+  { label: '广场首页', icon: HomeFilled, route: '/home', active: true },
   { label: '发布需求', icon: Promotion },
   { label: '我的聊天', icon: Message },
   { label: '我的匹配', icon: StarFilled },
   { label: '倾诉广场', icon: Headset },
-  { label: '认证中心', icon: Lock },
+  { label: '认证中心', icon: Lock, route: '/auth-center' },
   { label: '安全反馈', icon: Flag },
-  { label: '个人中心', icon: User }
+  { label: '个人中心', icon: User, route: '/profile' }
 ]
 
 const safetyItems = [
@@ -255,11 +337,148 @@ const safetyItems = [
   }
 ]
 
-const recommendations = [
-  { type: '羽毛球', title: '周末羽毛球双打找搭档', meta: '2/4人 · 周日 14:00 · 校羽毛球馆', author: '球场小太阳' },
-  { type: '学习打卡', title: '一起自习，互相监督学习', meta: '3/6人 · 工作日晚上 · 图书馆自习室', author: '早起冠军' },
-  { type: '跑步', title: '夜跑搭子，操场慢跑三公里', meta: '1/3人 · 周三 20:00 · 东区操场', author: '晚风同学' }
-]
+const activeCount = computed(() => Math.max(0, Math.min(post.value.currentCount || 0, post.value.maxCount || 0)))
+const emptyCount = computed(() => Math.max(0, (post.value.maxCount || 0) - (post.value.currentCount || 0)))
+const progressPercent = computed(() => {
+  if (!post.value.maxCount) {
+    return '0%'
+  }
+  return `${Math.min(100, Math.round((post.value.currentCount / post.value.maxCount) * 100))}%`
+})
+const shareLink = computed(() => `${window.location.origin}/match-post/${route.params.id}`)
+const {
+  currentUser,
+  isLoggedIn,
+  statusText: userStatusText,
+  avatarText: userInitial,
+  avatarUrl: userAvatar,
+  loadProfile: loadCurrentUserProfile
+} = useCurrentUserProfile()
+
+const loadPost = async () => {
+  try {
+    const response = await fetchHomePostDetail(route.params.id)
+    post.value = response.data.data
+  } catch (error) {
+    const message = error.response?.data?.message || '帖子详情加载失败'
+    ElMessage.error(message)
+    if (error.response?.status === 403 || message.includes('认证')) {
+      showVerifyTip.value = true
+      return false
+    }
+    router.push('/home')
+    return false
+  }
+  return true
+}
+
+const loadRecommendations = async () => {
+  const response = await fetchHomePlaza({
+    plaza: 'match',
+    category: '全部',
+    keyword: keyword.value
+  })
+  recommendations.value = (response.data.data.posts || [])
+    .filter((item) => String(item.id) !== String(route.params.id))
+    .slice(0, 3)
+}
+
+const goBack = () => {
+  router.push('/home')
+}
+
+const goPost = (id) => {
+  router.push(`/match-post/${id}`)
+}
+
+const goAuthCenter = () => {
+  showVerifyTip.value = false
+  if (isLoggedIn.value) {
+    router.push('/auth-center')
+    return
+  }
+  router.push('/login')
+}
+
+const goLogin = () => {
+  router.push('/login')
+}
+
+const openShareDialog = () => {
+  shareDialogVisible.value = true
+}
+
+const copyShareLink = async () => {
+  try {
+    await navigator.clipboard.writeText(shareLink.value)
+    ElMessage.success('分享链接已复制')
+  } catch (error) {
+    ElMessage.error('复制失败，请手动复制链接')
+  }
+}
+
+const openReportDialog = () => {
+  reportDialogVisible.value = true
+}
+
+const closeReportDialog = () => {
+  reportDialogVisible.value = false
+  reportForm.value = {
+    reason: '',
+    detail: '',
+    contact: ''
+  }
+}
+
+const submitReport = async () => {
+  if (reportSubmitting.value) {
+    return
+  }
+  if (!reportForm.value.reason) {
+    ElMessage.error('请选择举报原因')
+    return
+  }
+  reportSubmitting.value = true
+  try {
+    await submitHomePostReport(route.params.id, {
+      reason: reportForm.value.reason,
+      detail: reportForm.value.detail,
+      contact: reportForm.value.contact
+    })
+    ElMessage.success('举报已提交，平台会尽快处理')
+    closeReportDialog()
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '举报提交失败，请稍后重试')
+  } finally {
+    reportSubmitting.value = false
+  }
+}
+
+const handleNav = (item) => {
+  if (item.route) {
+    router.push(item.route)
+  }
+}
+
+const loadPage = async () => {
+  loading.value = true
+  try {
+    const loaded = await loadPost()
+    if (!loaded) {
+      return
+    }
+    await loadRecommendations()
+  } finally {
+    loading.value = false
+  }
+}
+
+watch(() => route.params.id, loadPage)
+
+onMounted(() => {
+  loadCurrentUserProfile().catch(() => {})
+  loadPage()
+})
 </script>
 
 <style scoped>
@@ -535,6 +754,17 @@ const recommendations = [
   width: 18px;
   height: 18px;
   color: #c48a39;
+}
+
+.login-chip {
+  min-width: 74px;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, #7460f4, #9d7bff);
+  font-size: 14px;
+  font-weight: 900;
 }
 
 .content-layout {
@@ -1111,6 +1341,159 @@ const recommendations = [
   border: 1px solid #d7ccfb;
   background: #fff;
   font-size: 13px;
+}
+
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(32, 35, 63, 0.24);
+  z-index: 30;
+}
+
+.action-dialog {
+  width: min(460px, 100%);
+  padding: 22px;
+  border: 1px solid #eee7ff;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 20px 52px rgba(87, 75, 128, 0.22);
+}
+
+.action-dialog header,
+.action-dialog footer,
+.copy-box {
+  display: flex;
+  align-items: center;
+}
+
+.action-dialog header {
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.action-dialog h2 {
+  margin: 0;
+  color: #20233f;
+  font-size: 20px;
+}
+
+.action-dialog header button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 50%;
+  color: #745cf2;
+  background: #f0ebff;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.action-dialog p,
+.share-preview span,
+.action-dialog label span {
+  color: #666b84;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.copy-box {
+  gap: 10px;
+  margin: 16px 0;
+}
+
+.copy-box input,
+.report-dialog input,
+.report-dialog select,
+.report-dialog textarea {
+  width: 100%;
+  border: 1px solid #dedced;
+  border-radius: 10px;
+  color: #4d5068;
+  background: #fff;
+  outline: 0;
+  font-size: 14px;
+}
+
+.copy-box input {
+  height: 42px;
+  padding: 0 12px;
+}
+
+.copy-box button,
+.dialog-primary {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(105deg, #7460f4, #f07aa9);
+  font-weight: 900;
+}
+
+.copy-box button {
+  min-width: 74px;
+  flex: 0 0 74px;
+  padding: 0 16px;
+  white-space: nowrap;
+}
+
+.share-preview {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f8f4ff;
+}
+
+.share-preview strong {
+  color: #20233f;
+}
+
+.report-dialog {
+  display: grid;
+  gap: 14px;
+}
+
+.report-dialog label {
+  display: grid;
+  gap: 8px;
+}
+
+.report-dialog input,
+.report-dialog select {
+  height: 40px;
+  padding: 0 12px;
+}
+
+.report-dialog textarea {
+  min-height: 104px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.action-dialog footer {
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.dialog-secondary {
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid #d7ccfb;
+  border-radius: 999px;
+  color: #745cf2;
+  background: #fff;
+  font-weight: 900;
+}
+
+.dialog-primary:disabled {
+  opacity: 0.72;
+  cursor: not-allowed;
 }
 
 @media (max-width: 1320px) {

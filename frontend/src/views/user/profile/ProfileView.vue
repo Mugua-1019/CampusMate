@@ -41,16 +41,12 @@
               <Search />
             </label>
             <button class="plain-icon" aria-label="我的聊天"><Message /></button>
-            <button class="plain-icon notice-button" aria-label="通知">
-              <Bell />
-              <span>3</span>
-            </button>
-            <button class="profile-chip" aria-label="个人菜单">
-              <img v-if="displayAvatarUrl" :src="displayAvatarUrl" alt="" class="profile-avatar-image" />
-              <span v-else class="profile-avatar">{{ avatarText }}</span>
-              <span>{{ verifyText }}</span>
-              <ArrowDown />
-            </button>
+            <NotificationBell />
+            <UserMenu
+              :avatar-url="displayAvatarUrl"
+              :avatar-text="avatarText"
+              :status-text="verifyText"
+            />
           </div>
         </header>
 
@@ -346,6 +342,8 @@ import { fetchProfile, updateProfile, uploadAvatar } from '../../../api/profile'
 import { getCurrentUser, saveCurrentUser } from '../../../utils/currentUser'
 import logoImage from '../../../assets/images/logo-star-mascot.png'
 import verifyImage from '../../../assets/images/renzheng.png'
+import NotificationBell from '../../../components/NotificationBell.vue'
+import UserMenu from '../../../components/UserMenu.vue'
 
 const router = useRouter()
 const currentUser = ref(getCurrentUser())
@@ -414,7 +412,7 @@ const avatarText = computed(() => (profile.value.nickname || '星').slice(0, 1))
 const verifyText = computed(() => (profile.value.verified ? '已认证' : '待认证'))
 const displayAvatarUrl = computed(() => {
   const avatarUrl = profile.value.avatarUrl || currentUser.value?.avatarUrl || ''
-  return avatarUrl === '/avatars/default.png' ? '' : avatarUrl
+  return avatarUrl
 })
 const completionStyle = computed(() => ({
   background: `radial-gradient(circle, #fff 0 55%, transparent 56%), conic-gradient(#725af1 0 ${profile.value.completionPercent || 0}%, #e7e1ff ${profile.value.completionPercent || 0}% 100%)`

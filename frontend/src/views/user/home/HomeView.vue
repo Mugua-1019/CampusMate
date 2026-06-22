@@ -42,16 +42,13 @@
               <Search />
             </label>
             <button class="plain-icon" aria-label="我的聊天"><Message /></button>
-            <button class="plain-icon notice-button" aria-label="通知">
-              <Bell />
-              <span>3</span>
-            </button>
-            <button v-if="isLoggedIn" class="profile-chip" @click="handleUserStatusClick">
-              <img v-if="userAvatar" class="profile-avatar" :src="userAvatar" alt="头像" />
-              <span v-else class="profile-avatar">{{ userInitial }}</span>
-              <span>{{ userSummary.verified ? '已认证' : '待认证' }}</span>
-              <ArrowDown />
-            </button>
+            <NotificationBell />
+            <UserMenu
+              v-if="isLoggedIn"
+              :avatar-url="userAvatar"
+              :avatar-text="userInitial"
+              :status-text="userSummary.verified ? '已认证' : '待认证'"
+            />
             <button v-else class="login-chip" @click="goLogin">登录</button>
           </div>
         </header>
@@ -91,7 +88,13 @@
         <p v-if="apiError" class="empty-state">{{ apiError }}</p>
 
         <section v-else class="post-grid" aria-label="星伴需求列表">
-          <article v-for="post in posts" :key="post.id" class="note-card" :class="toneMap[post.category] || 'note-other'">
+          <article
+            v-for="post in posts"
+            :key="post.id"
+            class="note-card"
+            :class="toneMap[post.category] || 'note-other'"
+            @click="goPostDetail(post)"
+          >
             <span class="pin" :class="isFull(post) ? 'pin-muted' : 'pin-pink'"></span>
             <span v-if="isFull(post)" class="tape"></span>
             <div class="card-title-row">
@@ -115,7 +118,7 @@
                 <strong>{{ post.publisherName }}</strong>
               </div>
               <span class="count">{{ post.currentCount }}/{{ post.maxCount }}人</span>
-              <button class="chat-button" :disabled="isFull(post)" @click="handleChat(post)">
+              <button class="chat-button" :disabled="isFull(post)" @click.stop="handleChat(post)">
                 {{ isFull(post) ? '已满员' : '聊一聊' }}
               </button>
             </footer>
@@ -214,6 +217,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import {
   ArrowDown,
   ArrowRight,
@@ -236,6 +240,8 @@ import verifyImage from '../../../assets/images/renzheng.png'
 import bannerImage from '../../../assets/images/guanggaotiao.png'
 import { fetchHomePlaza } from '../../../api/home'
 import { getCurrentUser, isAuthenticatedUser } from '../../../utils/currentUser'
+import NotificationBell from '../../../components/NotificationBell.vue'
+import UserMenu from '../../../components/UserMenu.vue'
 
 const router = useRouter()
 const currentUser = ref(getCurrentUser())
@@ -302,7 +308,19 @@ const selectPlaza = (plaza) => {
 
 const handleChat = (post) => {
   if (isFull(post)) return
-  showVerifyTip.value = true
+  if (!userSummary.value.verified) {
+    showVerifyTip.value = true
+    return
+  }
+  ElMessage.info('聊天功能正在接入中')
+}
+
+const goPostDetail = (post) => {
+  if (!userSummary.value.verified) {
+    showVerifyTip.value = true
+    return
+  }
+  router.push(post.plaza === 'vent' ? `/vent-post/${post.id}` : `/match-post/${post.id}`)
 }
 
 const goProfile = () => {

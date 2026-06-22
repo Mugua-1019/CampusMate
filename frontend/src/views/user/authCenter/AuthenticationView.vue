@@ -45,10 +45,7 @@
               <Search />
             </label>
             <button class="plain-icon" aria-label="我的聊天"><Message /></button>
-            <button class="plain-icon notice-button" aria-label="通知">
-              <Bell />
-              <span>3</span>
-            </button>
+            <NotificationBell />
             <button class="profile-chip" aria-label="个人菜单">
               <img v-if="authSummary.avatarUrl" class="profile-avatar" :src="authSummary.avatarUrl" alt="头像" />
               <span v-else class="profile-avatar">{{ authSummary.avatarText }}</span>
@@ -259,6 +256,7 @@ import verifyImage from '../../../assets/images/renzheng.png'
 import rightsImage from '../../../assets/images/quanyi-clean.png'
 import { fetchAuthCenter, sendPhoneAuthCode, submitCampusAuth, submitPhoneAuth, uploadAuthMaterial } from '../../../api/authCenter'
 import { getCurrentUser } from '../../../utils/currentUser'
+import NotificationBell from '../../../components/NotificationBell.vue'
 
 const router = useRouter()
 const keyword = ref('')
@@ -288,13 +286,23 @@ const navItems = [
 
 const tabs = ['校园认证', '手机号认证']
 
-const benefits = [
-  { label: '发布需求', icon: Document },
-  { label: '发起聊天', icon: ChatDotRound },
-  { label: '参与匹配', icon: Select },
-  { label: '提升可信度', icon: Lock },
-  { label: '更多推荐', icon: DataLine }
-]
+const iconMap = {
+  Document,
+  ChatDotRound,
+  Select,
+  Lock,
+  DataLine,
+  document: Document,
+  chat: ChatDotRound,
+  select: Select,
+  lock: Lock,
+  data: DataLine
+}
+
+const benefits = computed(() => (authCenterData.value?.benefits || []).map((item) => ({
+  label: item.label,
+  icon: iconMap[item.icon] || Document
+})))
 
 const formFields = reactive([
   {
@@ -331,51 +339,15 @@ const formFields = reactive([
   }
 ])
 
-const samples = [
-  { label: '学生证', tone: 'sample-id' },
-  { label: '校园卡', tone: 'sample-card' },
-  { label: '在校证明', tone: 'sample-paper' },
-  { label: '课表截图', tone: 'sample-table' }
-]
+const samples = computed(() => authCenterData.value?.samples || [])
 
-const rights = [
-  { title: '发布需求', desc: '发布学习、生活、活动等各类需求', icon: Document },
-  { title: '发起聊天', desc: '与更多同学发起聊天，拓展社交圈', icon: ChatDotRound },
-  { title: '参与匹配', desc: '解锁更多匹配机会，找到合适伙伴', icon: Select },
-  { title: '提升可信度', desc: '认证标识展示，增强他人信任感', icon: Lock }
-]
+const rights = computed(() => (authCenterData.value?.rights || []).map((item) => ({
+  title: item.title,
+  desc: item.description,
+  icon: iconMap[item.icon] || Document
+})))
 
-const records = [
-  {
-    time: '2024-05-20 14:32',
-    type: '校园认证',
-    content: '华东师范大学 · 学号：2023123456',
-    status: '审核中',
-    statusClass: 'pending',
-    feedback: '预计1-3个工作日内完成审核',
-    action: '-'
-  },
-  {
-    time: '2024-05-15 09:18',
-    type: '校园认证',
-    content: '北京大学 · 学号：2022123456',
-    status: '已通过',
-    statusClass: 'passed',
-    feedback: '认证通过，欢迎加入星伴大家庭！',
-    action: '查看详情'
-  },
-  {
-    time: '2024-05-10 16:45',
-    type: '手机号认证',
-    content: '138****5678',
-    status: '已通过',
-    statusClass: 'passed',
-    feedback: '手机号认证成功',
-    action: '查看详情'
-  }
-]
-
-const displayRecords = computed(() => authCenterData.value?.records?.length ? authCenterData.value.records : records)
+const displayRecords = computed(() => authCenterData.value?.records || [])
 const authSummary = computed(() => authCenterData.value?.summary || {
   avatarUrl: getCurrentUser()?.avatarUrl || '',
   avatarText: getCurrentUser()?.nickname?.slice(0, 1) || '星',
