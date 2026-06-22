@@ -2,12 +2,14 @@ com\campusmate\domain\vo\ProfileVO$SafetyVO.class
 com\campusmate\service\ProfileService.class
 com\campusmate\domain\vo\ProfileVO$PreferenceVO.class
 com\campusmate\common\exception\GlobalExceptionHandler.class
+com\campusmate\domain\vo\HomePlazaVO$HomeNotificationVO.class
 com\campusmate\CampusMateApplication.class
 com\campusmate\domain\vo\HomePlazaVO.class
 com\campusmate\domain\dto\AuthRegisterRequest.class
 com\campusmate\domain\dto\AuthLoginRequest.class
 com\campusmate\domain\entity\AuthCenterRecord.class
 com\campusmate\domain\entity\UserProfile.class
+com\campusmate\domain\entity\HomeNotification.class
 com\campusmate\service\impl\AuthServiceImpl.class
 com\campusmate\domain\entity\HomePlazaCategory.class
 com\campusmate\domain\vo\AuthCenterVO$SampleVO.class
@@ -17,7 +19,9 @@ com\campusmate\domain\vo\HomePlazaVO$PlazaTabVO.class
 com\campusmate\mapper\ProfileMapper.class
 com\campusmate\config\StaticResourceConfig.class
 com\campusmate\domain\vo\AuthCenterVO$RecordVO.class
+com\campusmate\domain\entity\HomePostReport.class
 com\campusmate\controller\AuthController.class
+com\campusmate\domain\dto\HomePostReportRequest.class
 com\campusmate\domain\vo\AuthUserVO.class
 com\campusmate\domain\vo\ProfileVO$CampusVerifyVO.class
 com\campusmate\domain\vo\AuthCenterPhoneCodeVO.class
@@ -31,12 +35,14 @@ com\campusmate\controller\ProfileController.class
 com\campusmate\service\AuthCenterService.class
 com\campusmate\domain\vo\ProfileVO$ActivityBarVO.class
 com\campusmate\mapper\HomeConfigMapper.class
+com\campusmate\domain\dto\AuthChangePasswordRequest.class
 com\campusmate\domain\dto\AuthCenterCampusSubmitRequest.class
 com\campusmate\domain\vo\ProfileVO$ActivityVO.class
 com\campusmate\service\impl\HomeServiceImpl.class
 com\campusmate\domain\dto\AuthResetPasswordRequest.class
 com\campusmate\domain\entity\HomePendingMeet.class
 com\campusmate\domain\entity\HomeUserSummary.class
+com\campusmate\domain\vo\HomePlazaVO$HomePostComfortVO.class
 com\campusmate\service\AuthService.class
 com\campusmate\domain\dto\AuthCenterPhoneSubmitRequest.class
 com\campusmate\domain\entity\UserAccount.class
@@ -51,6 +57,8 @@ com\campusmate\domain\entity\HomeUserStat.class
 com\campusmate\domain\vo\AuthCenterVO$BenefitVO.class
 com\campusmate\domain\vo\ProfileVO.class
 com\campusmate\common\result\Result.class
+com\campusmate\domain\vo\HomePlazaVO$HomePostReplyVO.class
+com\campusmate\domain\dto\HomePostReplyRequest.class
 com\campusmate\domain\vo\ProfileVO$PostVO.class
 com\campusmate\domain\entity\HomePlazaTab.class
 com\campusmate\domain\dto\AuthCenterPhoneCodeRequest.class
@@ -59,3 +67,4 @@ com\campusmate\mapper\AuthMapper.class
 com\campusmate\domain\entity\HomePost.class
 com\campusmate\domain\entity\AuthCenterPhoneCode.class
 com\campusmate\domain\vo\AuthCenterVO$SummaryVO.class
+com\campusmate\domain\entity\HomePostReply.class

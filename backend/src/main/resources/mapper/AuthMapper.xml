@@ -20,6 +20,20 @@
         limit 1
     </select>
 
+    <select id="selectByUserId" resultType="com.campusmate.domain.entity.UserAccount">
+        select
+            user_id,
+            account,
+            phone,
+            email,
+            password_salt,
+            password_hash,
+            enabled
+        from user_account
+        where user_id = #{userId}
+        limit 1
+    </select>
+
     <select id="countByLoginAccount" resultType="int">
         select count(1)
         from user_account

@@ -72,6 +72,7 @@ public class AuthCenterServiceImpl implements AuthCenterService {
         record.setMaterialName(requiredText(request.getMaterialName(), "materialName"));
         record.setMaterialUrl(requiredText(request.getMaterialUrl(), "materialUrl"));
         record.setStatus(STATUS_PENDING);
+        record.setVerified(false);
         record.setFeedback("预计1-3个工作日内完成审核");
         record.setActionText("-");
         record.setSubmittedAt(LocalDateTime.now());
@@ -121,6 +122,7 @@ public class AuthCenterServiceImpl implements AuthCenterService {
         record.setAuthType(TYPE_PHONE);
         record.setPhone(phone);
         record.setStatus(STATUS_PASSED);
+        record.setVerified(true);
         record.setFeedback("手机号认证成功");
         record.setActionText("查看详情");
         record.setSubmittedAt(LocalDateTime.now());

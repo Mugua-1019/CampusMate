@@ -102,6 +102,20 @@ class AuthCenterServiceImplTest {
         assertEquals("phone code is invalid or expired", exception.getMessage());
     }
 
+    @Test
+    void phoneAuthenticationRequiresCodeRecordEvenForMockCode() {
+        FakeAuthCenterMapper mapper = new FakeAuthCenterMapper();
+        AuthCenterService service = new AuthCenterServiceImpl(mapper);
+        AuthCenterPhoneSubmitRequest request = new AuthCenterPhoneSubmitRequest();
+        request.setUserId(1L);
+        request.setPhone("15562897057");
+        request.setCode("123456");
+
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> service.submitPhone(request));
+
+        assertEquals("phone code is invalid or expired", exception.getMessage());
+    }
+
     private AuthCenterCampusSubmitRequest campusRequest() {
         AuthCenterCampusSubmitRequest request = new AuthCenterCampusSubmitRequest();
         request.setUserId(1L);

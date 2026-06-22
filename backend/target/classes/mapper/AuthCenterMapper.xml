@@ -33,9 +33,9 @@
 
     <insert id="insertRecord" parameterType="com.campusmate.domain.entity.AuthCenterRecord" useGeneratedKeys="true" keyProperty="recordId">
         insert into auth_center_record
-        (user_id, auth_type, school, student_no, real_name, identity_type, phone, material_name, material_url, status, feedback, action_text, submitted_at)
+        (user_id, auth_type, school, student_no, real_name, identity_type, phone, material_name, material_url, status, verified, feedback, action_text, submitted_at)
         values
-        (#{userId}, #{authType}, #{school}, #{studentNo}, #{realName}, #{identityType}, #{phone}, #{materialName}, #{materialUrl}, #{status}, #{feedback}, #{actionText}, #{submittedAt})
+        (#{userId}, #{authType}, #{school}, #{studentNo}, #{realName}, #{identityType}, #{phone}, #{materialName}, #{materialUrl}, #{status}, #{verified}, #{feedback}, #{actionText}, #{submittedAt})
     </insert>
 
     <select id="selectRecords" resultType="com.campusmate.domain.entity.AuthCenterRecord">
@@ -51,6 +51,7 @@
             material_name,
             material_url,
             status,
+            verified,
             feedback,
             action_text,
             submitted_at,

@@ -15,6 +15,7 @@ public class AuthCenterRecord {
     private String materialName;
     private String materialUrl;
     private String status;
+    private Boolean verified;
     private String feedback;
     private String actionText;
     private LocalDateTime submittedAt;
@@ -106,6 +107,14 @@ public class AuthCenterRecord {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Boolean getVerified() {
+        return verified;
+    }
+
+    public void setVerified(Boolean verified) {
+        this.verified = verified;
     }
 
     public String getFeedback() {

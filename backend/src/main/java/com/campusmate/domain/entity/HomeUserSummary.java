@@ -4,6 +4,7 @@ public class HomeUserSummary {
 
     private Long userId;
     private Boolean verified;
+    private String verifyStatus;
     private String nickname;
     private String avatarUrl;
 
@@ -21,6 +22,14 @@ public class HomeUserSummary {
 
     public void setVerified(Boolean verified) {
         this.verified = verified;
+    }
+
+    public String getVerifyStatus() {
+        return verifyStatus;
+    }
+
+    public void setVerifyStatus(String verifyStatus) {
+        this.verifyStatus = verifyStatus;
     }
 
     public String getNickname() {

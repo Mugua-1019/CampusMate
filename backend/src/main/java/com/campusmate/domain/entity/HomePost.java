@@ -4,6 +4,7 @@ public class HomePost {
 
     private Long id;
     private String plaza;
+    private Long publisherUserId;
     private String category;
     private String title;
     private String status;
@@ -12,11 +13,17 @@ public class HomePost {
     private String expectedTime;
     private String expectedLocation;
     private String publisherName;
+    private String publisherStatus;
+    private String publisherStatusNote;
     private String avatarText;
     private Boolean anonymous;
     private Boolean verified;
     private Integer currentCount;
     private Integer maxCount;
+    private String currentState;
+    private String hopeYouCan;
+    private String preferredWay;
+    private String gentleReplies;
 
     public Long getId() {
         return id;
@@ -32,6 +39,14 @@ public class HomePost {
 
     public void setPlaza(String plaza) {
         this.plaza = plaza;
+    }
+
+    public Long getPublisherUserId() {
+        return publisherUserId;
+    }
+
+    public void setPublisherUserId(Long publisherUserId) {
+        this.publisherUserId = publisherUserId;
     }
 
     public String getCategory() {
@@ -98,6 +113,22 @@ public class HomePost {
         this.publisherName = publisherName;
     }
 
+    public String getPublisherStatus() {
+        return publisherStatus;
+    }
+
+    public void setPublisherStatus(String publisherStatus) {
+        this.publisherStatus = publisherStatus;
+    }
+
+    public String getPublisherStatusNote() {
+        return publisherStatusNote;
+    }
+
+    public void setPublisherStatusNote(String publisherStatusNote) {
+        this.publisherStatusNote = publisherStatusNote;
+    }
+
     public String getAvatarText() {
         return avatarText;
     }
@@ -136,5 +167,37 @@ public class HomePost {
 
     public void setMaxCount(Integer maxCount) {
         this.maxCount = maxCount;
+    }
+
+    public String getCurrentState() {
+        return currentState;
+    }
+
+    public void setCurrentState(String currentState) {
+        this.currentState = currentState;
+    }
+
+    public String getHopeYouCan() {
+        return hopeYouCan;
+    }
+
+    public void setHopeYouCan(String hopeYouCan) {
+        this.hopeYouCan = hopeYouCan;
+    }
+
+    public String getPreferredWay() {
+        return preferredWay;
+    }
+
+    public void setPreferredWay(String preferredWay) {
+        this.preferredWay = preferredWay;
+    }
+
+    public String getGentleReplies() {
+        return gentleReplies;
+    }
+
+    public void setGentleReplies(String gentleReplies) {
+        this.gentleReplies = gentleReplies;
     }
 }

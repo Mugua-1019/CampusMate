@@ -10,6 +10,8 @@ public interface AuthMapper {
 
     UserAccount selectByLoginAccount(@Param("account") String account);
 
+    UserAccount selectByUserId(@Param("userId") Long userId);
+
     int countByLoginAccount(@Param("account") String account);
 
     int insertAccount(UserAccount account);

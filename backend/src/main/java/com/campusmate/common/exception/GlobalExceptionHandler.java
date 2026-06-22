@@ -21,6 +21,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Result.fail(500, exception.getMessage()));
     }
 
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<Result<Void>> handleSecurity(SecurityException exception) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Result.fail(403, exception.getMessage()));
+    }
+
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Result<Void>> handleIOException(IOException exception) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Result.fail(500, exception.getMessage()));

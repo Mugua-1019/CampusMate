@@ -214,12 +214,20 @@ public class HomePlazaVO {
         private String time;
         private String location;
         private String publisherName;
+        private String publisherStatus;
+        private String publisherStatusNote;
         private String avatarText;
         private boolean anonymous;
         private boolean verified;
         private int currentCount;
         private int maxCount;
         private boolean full;
+        private List<String> currentState;
+        private List<String> hopeYouCan;
+        private List<String> preferredWay;
+        private List<String> gentleReplies;
+        private List<HomePostReplyVO> replies;
+        private List<HomePostVO> similarPosts;
 
         public Long getId() {
             return id;
@@ -301,6 +309,22 @@ public class HomePlazaVO {
             this.publisherName = publisherName;
         }
 
+        public String getPublisherStatus() {
+            return publisherStatus;
+        }
+
+        public void setPublisherStatus(String publisherStatus) {
+            this.publisherStatus = publisherStatus;
+        }
+
+        public String getPublisherStatusNote() {
+            return publisherStatusNote;
+        }
+
+        public void setPublisherStatusNote(String publisherStatusNote) {
+            this.publisherStatusNote = publisherStatusNote;
+        }
+
         public String getAvatarText() {
             return avatarText;
         }
@@ -347,6 +371,198 @@ public class HomePlazaVO {
 
         public void setFull(boolean full) {
             this.full = full;
+        }
+
+        public List<String> getCurrentState() {
+            return currentState;
+        }
+
+        public void setCurrentState(List<String> currentState) {
+            this.currentState = currentState;
+        }
+
+        public List<String> getHopeYouCan() {
+            return hopeYouCan;
+        }
+
+        public void setHopeYouCan(List<String> hopeYouCan) {
+            this.hopeYouCan = hopeYouCan;
+        }
+
+        public List<String> getPreferredWay() {
+            return preferredWay;
+        }
+
+        public void setPreferredWay(List<String> preferredWay) {
+            this.preferredWay = preferredWay;
+        }
+
+        public List<String> getGentleReplies() {
+            return gentleReplies;
+        }
+
+        public void setGentleReplies(List<String> gentleReplies) {
+            this.gentleReplies = gentleReplies;
+        }
+
+        public List<HomePostReplyVO> getReplies() {
+            return replies;
+        }
+
+        public void setReplies(List<HomePostReplyVO> replies) {
+            this.replies = replies;
+        }
+
+        public List<HomePostVO> getSimilarPosts() {
+            return similarPosts;
+        }
+
+        public void setSimilarPosts(List<HomePostVO> similarPosts) {
+            this.similarPosts = similarPosts;
+        }
+    }
+
+    public static class HomePostReplyVO {
+        private Long id;
+        private Long postId;
+        private Long userId;
+        private String authorName;
+        private String avatarText;
+        private String content;
+        private int likeCount;
+        private String createdAt;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public Long getPostId() {
+            return postId;
+        }
+
+        public void setPostId(Long postId) {
+            this.postId = postId;
+        }
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Long userId) {
+            this.userId = userId;
+        }
+
+        public String getAuthorName() {
+            return authorName;
+        }
+
+        public void setAuthorName(String authorName) {
+            this.authorName = authorName;
+        }
+
+        public String getAvatarText() {
+            return avatarText;
+        }
+
+        public void setAvatarText(String avatarText) {
+            this.avatarText = avatarText;
+        }
+
+        public String getContent() {
+            return content;
+        }
+
+        public void setContent(String content) {
+            this.content = content;
+        }
+
+        public int getLikeCount() {
+            return likeCount;
+        }
+
+        public void setLikeCount(int likeCount) {
+            this.likeCount = likeCount;
+        }
+
+        public String getCreatedAt() {
+            return createdAt;
+        }
+
+        public void setCreatedAt(String createdAt) {
+            this.createdAt = createdAt;
+        }
+    }
+
+    public static class HomeNotificationVO {
+        private Long id;
+        private String message;
+        private int count;
+        private boolean unread;
+        private String updatedAt;
+
+        public Long getId() {
+            return id;
+        }
+
+        public void setId(Long id) {
+            this.id = id;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void setCount(int count) {
+            this.count = count;
+        }
+
+        public boolean isUnread() {
+            return unread;
+        }
+
+        public void setUnread(boolean unread) {
+            this.unread = unread;
+        }
+
+        public String getUpdatedAt() {
+            return updatedAt;
+        }
+
+        public void setUpdatedAt(String updatedAt) {
+            this.updatedAt = updatedAt;
+        }
+    }
+
+    public static class HomePostComfortVO {
+        private Long postId;
+        private int currentCount;
+
+        public Long getPostId() {
+            return postId;
+        }
+
+        public void setPostId(Long postId) {
+            this.postId = postId;
+        }
+
+        public int getCurrentCount() {
+            return currentCount;
+        }
+
+        public void setCurrentCount(int currentCount) {
+            this.currentCount = currentCount;
         }
     }
 }

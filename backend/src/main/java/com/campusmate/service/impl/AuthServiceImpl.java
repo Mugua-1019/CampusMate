@@ -1,11 +1,14 @@
 package com.campusmate.service.impl;
 
+import com.campusmate.domain.dto.AuthChangePasswordRequest;
 import com.campusmate.domain.dto.AuthLoginRequest;
 import com.campusmate.domain.dto.AuthRegisterRequest;
 import com.campusmate.domain.dto.AuthResetPasswordRequest;
+import com.campusmate.domain.entity.AuthCenterPhoneCode;
 import com.campusmate.domain.entity.UserAccount;
 import com.campusmate.domain.entity.UserProfile;
 import com.campusmate.domain.vo.AuthUserVO;
+import com.campusmate.mapper.AuthCenterMapper;
 import com.campusmate.mapper.AuthMapper;
 import com.campusmate.mapper.ProfileMapper;
 import com.campusmate.service.AuthService;
@@ -22,14 +25,17 @@ import java.util.HexFormat;
 public class AuthServiceImpl implements AuthService {
 
     private static final int MIN_PASSWORD_LENGTH = 6;
+    private static final String DEFAULT_AVATAR_URL = "/testimage/moren.png";
 
     private final AuthMapper authMapper;
     private final ProfileMapper profileMapper;
+    private final AuthCenterMapper authCenterMapper;
     private final SecureRandom secureRandom = new SecureRandom();
 
-    public AuthServiceImpl(AuthMapper authMapper, ProfileMapper profileMapper) {
+    public AuthServiceImpl(AuthMapper authMapper, ProfileMapper profileMapper, AuthCenterMapper authCenterMapper) {
         this.authMapper = authMapper;
         this.profileMapper = profileMapper;
+        this.authCenterMapper = authCenterMapper;
     }
 
     @Override
@@ -77,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         }
         UserProfile profile = new UserProfile();
         profile.setUserId(account.getUserId());
-        profile.setAvatarUrl("/avatars/default.png");
+        profile.setAvatarUrl(DEFAULT_AVATAR_URL);
         profile.setNickname(nickname);
         profile.setVerified(false);
         profile.setVerifyStatus("unverified");
@@ -96,6 +102,31 @@ public class AuthServiceImpl implements AuthService {
         }
         String salt = newSalt();
         requireOne(authMapper.updatePassword(account.getUserId(), salt, hashPassword(salt, password)), "password reset");
+    }
+
+    @Override
+    public void changePassword(AuthChangePasswordRequest request) {
+        if (request == null) {
+            request = new AuthChangePasswordRequest();
+        }
+        Long userId = requireUserId(request.getUserId());
+        String phone = validPhone(request.getPhone());
+        String codeText = requiredText(request.getCode(), "code");
+        String password = validPassword(request.getPassword());
+        UserAccount account = authMapper.selectByUserId(userId);
+        if (account == null || !Boolean.TRUE.equals(account.getEnabled())) {
+            throw new IllegalArgumentException("account not found");
+        }
+        if (!phone.equals(account.getPhone()) && !phone.equals(account.getAccount())) {
+            throw new IllegalArgumentException("phone does not match current account");
+        }
+        AuthCenterPhoneCode code = authCenterMapper.selectLatestPhoneCode(userId, phone, java.time.LocalDateTime.now());
+        if (code == null || !codeText.equals(code.getCode())) {
+            throw new IllegalArgumentException("phone code is invalid or expired");
+        }
+        requireOne(authCenterMapper.markPhoneCodeUsed(code.getCodeId()), "phone code used update");
+        String salt = newSalt();
+        requireOne(authMapper.updatePassword(userId, salt, hashPassword(salt, password)), "password change");
     }
 
     private AuthUserVO toVO(UserAccount account) {
@@ -124,6 +155,21 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("password must be at least 6 characters");
         }
         return password;
+    }
+
+    private Long requireUserId(Long userId) {
+        if (userId == null || userId <= 0) {
+            throw new IllegalArgumentException("userId is required");
+        }
+        return userId;
+    }
+
+    private String validPhone(String value) {
+        String phone = requiredText(value, "phone");
+        if (!phone.matches("\\d{11}")) {
+            throw new IllegalArgumentException("phone must be 11 digits");
+        }
+        return phone;
     }
 
     private String defaultNickname(String account) {

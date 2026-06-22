@@ -1,11 +1,16 @@
 package com.campusmate.service;
 
 import com.campusmate.domain.dto.AuthLoginRequest;
+import com.campusmate.domain.dto.AuthChangePasswordRequest;
 import com.campusmate.domain.dto.AuthRegisterRequest;
 import com.campusmate.domain.dto.AuthResetPasswordRequest;
+import com.campusmate.domain.entity.AuthCenterPhoneCode;
+import com.campusmate.domain.entity.AuthCenterRecord;
 import com.campusmate.domain.entity.UserAccount;
 import com.campusmate.domain.entity.UserProfile;
+import com.campusmate.domain.vo.AuthCenterVO;
 import com.campusmate.domain.vo.ProfileVO;
+import com.campusmate.mapper.AuthCenterMapper;
 import com.campusmate.mapper.AuthMapper;
 import com.campusmate.mapper.ProfileMapper;
 import com.campusmate.service.impl.AuthServiceImpl;
@@ -16,6 +21,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.List;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -27,7 +33,7 @@ class AuthServiceImplTest {
     @Test
     void loginReturnsUserWhenPasswordMatchesStoredHash() {
         FakeAuthMapper authMapper = new FakeAuthMapper(account("demo", "salt", hash("salt", "123456")));
-        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(profile()));
+        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(profile()), new FakeAuthCenterMapper());
         AuthLoginRequest request = new AuthLoginRequest();
         request.setAccount("demo");
         request.setPassword("123456");
@@ -39,7 +45,8 @@ class AuthServiceImplTest {
     void loginRejectsWrongPassword() {
         AuthService service = new AuthServiceImpl(
                 new FakeAuthMapper(account("demo", "salt", hash("salt", "123456"))),
-                new FakeProfileMapper(profile())
+                new FakeProfileMapper(profile()),
+                new FakeAuthCenterMapper()
         );
         AuthLoginRequest request = new AuthLoginRequest();
         request.setAccount("demo");
@@ -53,7 +60,7 @@ class AuthServiceImplTest {
     @Test
     void registerCreatesAccountProfileAndHomeSummary() {
         FakeAuthMapper authMapper = new FakeAuthMapper(null);
-        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(null));
+        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(null), new FakeAuthCenterMapper());
         AuthRegisterRequest request = new AuthRegisterRequest();
         request.setAccount("student@example.com");
         request.setPassword("123456");
@@ -69,7 +76,7 @@ class AuthServiceImplTest {
     @Test
     void registerUsesDefaultNicknameWhenNicknameIsBlank() {
         FakeAuthMapper authMapper = new FakeAuthMapper(null);
-        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(null));
+        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(null), new FakeAuthCenterMapper());
         AuthRegisterRequest request = new AuthRegisterRequest();
         request.setAccount("student@example.com");
         request.setPassword("123456");
@@ -84,7 +91,7 @@ class AuthServiceImplTest {
     void resetPasswordUpdatesSaltAndHash() {
         UserAccount account = account("demo", "old-salt", hash("old-salt", "123456"));
         FakeAuthMapper authMapper = new FakeAuthMapper(account);
-        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(profile()));
+        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(profile()), new FakeAuthCenterMapper());
         AuthResetPasswordRequest request = new AuthResetPasswordRequest();
         request.setAccount("demo");
         request.setPassword("654321");
@@ -93,6 +100,26 @@ class AuthServiceImplTest {
 
         assertNotEquals("old-salt", authMapper.updatedSalt);
         assertEquals(authMapper.updatedHash, hash(authMapper.updatedSalt, "654321"));
+    }
+
+    @Test
+    void changePasswordRequiresMatchingPhoneCode() {
+        UserAccount account = account("13800000000", "old-salt", hash("old-salt", "123456"));
+        account.setPhone("13800000000");
+        FakeAuthMapper authMapper = new FakeAuthMapper(account);
+        FakeAuthCenterMapper authCenterMapper = new FakeAuthCenterMapper();
+        AuthService service = new AuthServiceImpl(authMapper, new FakeProfileMapper(profile()), authCenterMapper);
+        AuthChangePasswordRequest request = new AuthChangePasswordRequest();
+        request.setUserId(1L);
+        request.setPhone("13800000000");
+        request.setCode("123456");
+        request.setPassword("654321");
+
+        service.changePassword(request);
+
+        assertNotEquals("old-salt", authMapper.updatedSalt);
+        assertEquals(authMapper.updatedHash, hash(authMapper.updatedSalt, "654321"));
+        assertEquals(9L, authCenterMapper.usedCodeId);
     }
 
     private UserAccount account(String loginAccount, String salt, String hash) {
@@ -109,7 +136,7 @@ class AuthServiceImplTest {
         UserProfile profile = new UserProfile();
         profile.setUserId(1L);
         profile.setNickname("Demo User");
-        profile.setAvatarUrl("/avatars/default.png");
+        profile.setAvatarUrl("/testimage/moren.png");
         return profile;
     }
 
@@ -136,6 +163,11 @@ class AuthServiceImplTest {
 
         @Override
         public UserAccount selectByLoginAccount(String account) {
+            return this.account;
+        }
+
+        @Override
+        public UserAccount selectByUserId(Long userId) {
             return this.account;
         }
 
@@ -168,6 +200,73 @@ class AuthServiceImplTest {
         public int updatePassword(Long userId, String passwordSalt, String passwordHash) {
             this.updatedSalt = passwordSalt;
             this.updatedHash = passwordHash;
+            return 1;
+        }
+    }
+
+    private static class FakeAuthCenterMapper implements AuthCenterMapper {
+        private Long usedCodeId;
+
+        @Override
+        public UserProfile selectProfile(Long userId) {
+            return null;
+        }
+
+        @Override
+        public int countPendingCampusRecord(Long userId) {
+            return 0;
+        }
+
+        @Override
+        public int insertRecord(AuthCenterRecord record) {
+            return 1;
+        }
+
+        @Override
+        public List<AuthCenterRecord> selectRecords(Long userId) {
+            return List.of();
+        }
+
+        @Override
+        public List<AuthCenterVO.BenefitVO> selectBenefits() {
+            return List.of();
+        }
+
+        @Override
+        public List<AuthCenterVO.SampleVO> selectSamples() {
+            return List.of();
+        }
+
+        @Override
+        public List<AuthCenterVO.RightVO> selectRights() {
+            return List.of();
+        }
+
+        @Override
+        public int insertPhoneCode(AuthCenterPhoneCode code) {
+            return 1;
+        }
+
+        @Override
+        public AuthCenterPhoneCode selectLatestPhoneCode(Long userId, String phone, LocalDateTime now) {
+            AuthCenterPhoneCode code = new AuthCenterPhoneCode();
+            code.setCodeId(9L);
+            code.setUserId(userId);
+            code.setPhone(phone);
+            code.setCode("123456");
+            code.setUsed(false);
+            code.setExpiresAt(now.plusMinutes(5));
+            return code;
+        }
+
+        @Override
+        public int markPhoneCodeUsed(Long codeId) {
+            this.usedCodeId = codeId;
+            return 1;
+        }
+
+        @Override
+        public int updateAccountPhone(Long userId, String phone) {
             return 1;
         }
     }

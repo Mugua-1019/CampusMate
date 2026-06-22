@@ -11,3 +11,7 @@ export const register = (data) => {
 export const resetPassword = (data) => {
   return axios.post('/api/auth/reset-password', data)
 }
+
+export const changePassword = (data) => {
+  return axios.post('/api/auth/change-password', data)
+}

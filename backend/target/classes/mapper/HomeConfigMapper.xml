@@ -27,6 +27,7 @@
         select
             s.user_id,
             p.verified,
+            p.verify_status,
             coalesce(p.nickname, s.nickname) as nickname,
             p.avatar_url
         from home_user_summary s

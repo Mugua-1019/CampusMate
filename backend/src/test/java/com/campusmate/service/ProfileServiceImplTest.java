@@ -92,7 +92,7 @@ class ProfileServiceImplTest {
     private UserProfile profile() {
         UserProfile profile = new UserProfile();
         profile.setUserId(1L);
-        profile.setAvatarUrl("/avatars/default.png");
+        profile.setAvatarUrl("/testimage/moren.png");
         profile.setNickname("Ada");
         profile.setGender("female");
         profile.setGrade("2023");

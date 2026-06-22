@@ -8,6 +8,7 @@
         select
             id,
             plaza,
+            publisher_user_id,
             category,
             title,
             status,
@@ -16,11 +17,17 @@
             expected_time,
             expected_location,
             publisher_name,
+            publisher_status,
+            publisher_status_note,
             avatar_text,
             anonymous,
             verified,
             current_count,
-            max_count
+            max_count,
+            current_state,
+            hope_you_can,
+            preferred_way,
+            gentle_replies
         from home_post
         where deleted = 0
           and review_status = 'visible'
@@ -40,4 +47,192 @@
         order by sort_weight desc, id desc
         limit 20
     </select>
+
+    <select id="selectVisibleMatchPostById" resultType="com.campusmate.domain.entity.HomePost">
+        select
+            id,
+            plaza,
+            publisher_user_id,
+            category,
+            title,
+            status,
+            tags,
+            description,
+            expected_time,
+            expected_location,
+            publisher_name,
+            publisher_status,
+            publisher_status_note,
+            avatar_text,
+            anonymous,
+            verified,
+            current_count,
+            max_count,
+            current_state,
+            hope_you_can,
+            preferred_way,
+            gentle_replies
+        from home_post
+        where deleted = 0
+          and review_status = 'visible'
+          and plaza = 'match'
+          and id = #{id}
+        limit 1
+    </select>
+
+    <select id="selectVisibleVentPostById" resultType="com.campusmate.domain.entity.HomePost">
+        select
+            id,
+            plaza,
+            publisher_user_id,
+            category,
+            title,
+            status,
+            tags,
+            description,
+            expected_time,
+            expected_location,
+            publisher_name,
+            publisher_status,
+            publisher_status_note,
+            avatar_text,
+            anonymous,
+            verified,
+            current_count,
+            max_count,
+            current_state,
+            hope_you_can,
+            preferred_way,
+            gentle_replies
+        from home_post
+        where deleted = 0
+          and review_status = 'visible'
+          and plaza = 'vent'
+          and id = #{id}
+        limit 1
+    </select>
+
+    <select id="selectSimilarVisibleVentPosts" resultType="com.campusmate.domain.entity.HomePost">
+        select
+            id,
+            plaza,
+            publisher_user_id,
+            category,
+            title,
+            status,
+            tags,
+            description,
+            expected_time,
+            expected_location,
+            publisher_name,
+            publisher_status,
+            publisher_status_note,
+            avatar_text,
+            anonymous,
+            verified,
+            current_count,
+            max_count,
+            current_state,
+            hope_you_can,
+            preferred_way,
+            gentle_replies
+        from home_post
+        where deleted = 0
+          and review_status = 'visible'
+          and plaza = 'vent'
+          and id != #{id}
+        <if test="category != null and category != ''">
+          and category = #{category}
+        </if>
+        order by sort_weight desc, id desc
+        limit 3
+    </select>
+
+    <select id="selectVisibleRepliesByPostId" resultType="com.campusmate.domain.entity.HomePostReply">
+        select
+            id,
+            post_id,
+            user_id,
+            author_name,
+            avatar_text,
+            content,
+            like_count,
+            review_status,
+            deleted,
+            created_at,
+            updated_at
+        from home_post_reply
+        where deleted = 0
+          and review_status = 'visible'
+          and post_id = #{postId}
+        order by created_at asc, id asc
+        limit 50
+    </select>
+
+    <select id="selectVerifyStatus" resultType="com.campusmate.domain.entity.UserProfile">
+        select
+            verified,
+            verify_status
+        from user_profile
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectNotificationsByUserId" resultType="com.campusmate.domain.entity.HomeNotification">
+        select
+            id,
+            user_id,
+            notice_type,
+            source_type,
+            source_id,
+            aggregate_count,
+            read_status,
+            created_at,
+            updated_at
+        from home_notification
+        where user_id = #{userId}
+        order by updated_at desc, id desc
+        limit 20
+    </select>
+
+    <update id="incrementVentPostComfort">
+        update home_post
+        set current_count = current_count + 1
+        where id = #{postId}
+          and plaza = 'vent'
+          and deleted = 0
+          and review_status = 'visible'
+    </update>
+
+    <insert id="upsertLikeNotification">
+        insert into home_notification
+        (user_id, notice_type, source_type, source_id, aggregate_count, read_status, created_at, updated_at)
+        values
+        (#{userId}, 'post_like', 'home_post', #{postId}, 1, 'unread', now(), now())
+        on duplicate key update
+            aggregate_count = aggregate_count + 1,
+            read_status = 'unread',
+            updated_at = now()
+    </insert>
+
+    <update id="markNotificationsRead">
+        update home_notification
+        set read_status = 'read'
+        where user_id = #{userId}
+          and read_status = 'unread'
+    </update>
+
+    <insert id="insertReply" parameterType="com.campusmate.domain.entity.HomePostReply" useGeneratedKeys="true" keyProperty="id">
+        insert into home_post_reply
+        (post_id, user_id, author_name, avatar_text, content, like_count, review_status, deleted, created_at, updated_at)
+        values
+        (#{postId}, #{userId}, #{authorName}, #{avatarText}, #{content}, #{likeCount}, #{reviewStatus}, #{deleted}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <insert id="insertReport" parameterType="com.campusmate.domain.entity.HomePostReport" useGeneratedKeys="true" keyProperty="reportId">
+        insert into home_post_report
+        (post_id, reporter_user_id, reason, detail, contact, status, created_at)
+        values
+        (#{postId}, #{reporterUserId}, #{reason}, #{detail}, #{contact}, #{status}, #{createdAt})
+    </insert>
 </mapper>
