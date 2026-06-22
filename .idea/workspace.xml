@@ -4,10 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8d15c41b-2da2-46dc-8172-0e95ed8cb436" name="更改" comment="1">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="8d15c41b-2da2-46dc-8172-0e95ed8cb436" name="更改" comment="1" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -58,7 +55,8 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;,
     &quot;数据库脚本.001_homepage.sql.executor&quot;: &quot;Run&quot;,
     &quot;数据库脚本.001_homepage_seed.sql.executor&quot;: &quot;Run&quot;,
-    &quot;数据库脚本.001_init_homepage.sql.executor&quot;: &quot;Run&quot;
+    &quot;数据库脚本.001_init_homepage.sql.executor&quot;: &quot;Run&quot;,
+    &quot;数据库脚本.init.sql.executor&quot;: &quot;Run&quot;
   },
   &quot;keyToStringList&quot;: {
     &quot;DatabaseDriversLRU&quot;: [
@@ -89,6 +87,12 @@
     </configuration>
     <configuration name="001_init_homepage.sql" type="DatabaseScript" editBeforeRun="true" temporary="true" nameIsGenerated="true">
       <script-file value="$PROJECT_DIR$/database/init/001_init_homepage.sql" />
+      <script-mode>FILE</script-mode>
+      <data-source id="1f255313-629c-475a-a89f-f44dead1f552" />
+      <method v="2" />
+    </configuration>
+    <configuration name="init.sql" type="DatabaseScript" editBeforeRun="true" temporary="true" nameIsGenerated="true">
+      <script-file value="$PROJECT_DIR$/database/init.sql" />
       <script-mode>FILE</script-mode>
       <data-source id="1f255313-629c-475a-a89f-f44dead1f552" />
       <method v="2" />
@@ -125,12 +129,14 @@
     </configuration>
     <list>
       <item itemvalue="Maven.CampusMate Backend " />
+      <item itemvalue="数据库脚本.init.sql" />
       <item itemvalue="数据库脚本.001_homepage.sql" />
       <item itemvalue="数据库脚本.001_homepage_seed.sql" />
       <item itemvalue="数据库脚本.001_init_homepage.sql" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="数据库脚本.init.sql" />
         <item itemvalue="数据库脚本.001_homepage_seed.sql" />
         <item itemvalue="数据库脚本.001_homepage.sql" />
         <item itemvalue="数据库脚本.001_init_homepage.sql" />
@@ -160,7 +166,9 @@
       <workItem from="1781749667724" duration="10569000" />
       <workItem from="1781828095795" duration="12060000" />
       <workItem from="1782020131033" duration="6249000" />
-      <workItem from="1782089706889" duration="5148000" />
+      <workItem from="1782089706889" duration="10970000" />
+      <workItem from="1782109131682" duration="4476000" />
+      <workItem from="1782117945368" duration="7238000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
@@ -178,7 +186,23 @@
       <option name="project" value="LOCAL" />
       <updated>1782092670782</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="1">
+      <option name="closed" value="true" />
+      <created>1782096245309</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1782096245309</updated>
+    </task>
+    <task id="LOCAL-00004" summary="1">
+      <option name="closed" value="true" />
+      <created>1782096250188</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1782096250188</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

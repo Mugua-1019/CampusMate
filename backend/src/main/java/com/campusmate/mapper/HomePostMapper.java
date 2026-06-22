@@ -2,6 +2,7 @@ package com.campusmate.mapper;
 
 import com.campusmate.domain.dto.HomePlazaQuery;
 import com.campusmate.domain.entity.HomeNotification;
+import com.campusmate.domain.entity.HomeMatchRequest;
 import com.campusmate.domain.entity.HomePost;
 import com.campusmate.domain.entity.HomePostReport;
 import com.campusmate.domain.entity.HomePostReply;
@@ -34,7 +35,31 @@ public interface HomePostMapper {
 
     int markNotificationsRead(@Param("userId") Long userId);
 
+    int insertPost(HomePost post);
+
     int insertReply(HomePostReply reply);
 
     int insertReport(HomePostReport report);
+
+    HomeMatchRequest selectMatchRequestByPostAndRequester(@Param("postId") Long postId, @Param("requesterUserId") Long requesterUserId);
+
+    HomeMatchRequest selectMatchRequestDetailById(@Param("requestId") Long requestId);
+
+    List<HomeMatchRequest> selectStartedMatchRequests(@Param("userId") Long userId);
+
+    List<HomeMatchRequest> selectJoinedMatchRequests(@Param("userId") Long userId);
+
+    List<HomeMatchRequest> selectRecentApprovedMatchRequests(@Param("userId") Long userId);
+
+    int countStartedMatchPosts(@Param("userId") Long userId);
+
+    int countMatchRequestsByStatus(@Param("userId") Long userId, @Param("status") String status);
+
+    int insertMatchRequest(HomeMatchRequest request);
+
+    int approveMatchRequest(@Param("requestId") Long requestId, @Param("publisherUserId") Long publisherUserId);
+
+    int rejectMatchRequest(@Param("requestId") Long requestId, @Param("publisherUserId") Long publisherUserId);
+
+    int incrementMatchPostCount(@Param("postId") Long postId);
 }

@@ -12,7 +12,9 @@ public class HomePost {
     private String description;
     private String expectedTime;
     private String expectedLocation;
+    private String aaFee;
     private String publisherName;
+    private String publisherAvatarUrl;
     private String publisherStatus;
     private String publisherStatusNote;
     private String avatarText;
@@ -105,12 +107,28 @@ public class HomePost {
         this.expectedLocation = expectedLocation;
     }
 
+    public String getAaFee() {
+        return aaFee;
+    }
+
+    public void setAaFee(String aaFee) {
+        this.aaFee = aaFee;
+    }
+
     public String getPublisherName() {
         return publisherName;
     }
 
     public void setPublisherName(String publisherName) {
         this.publisherName = publisherName;
+    }
+
+    public String getPublisherAvatarUrl() {
+        return publisherAvatarUrl;
+    }
+
+    public void setPublisherAvatarUrl(String publisherAvatarUrl) {
+        this.publisherAvatarUrl = publisherAvatarUrl;
     }
 
     public String getPublisherStatus() {

@@ -38,7 +38,7 @@
               <input v-model="keyword" placeholder="搜索需求、活动或用户" />
               <Search />
             </label>
-            <button class="plain-icon" aria-label="我的聊天"><Message /></button>
+            <button class="plain-icon" aria-label="我的聊天" @click="goChat"><Message /></button>
             <NotificationBell />
             <UserMenu
               v-if="isLoggedIn"
@@ -92,6 +92,10 @@
                 </div>
                 <div>
                   <strong><Wallet /> 消费预算</strong>
+                  <span>{{ post.aaFee || '费用待定' }}</span>
+                </div>
+                <div>
+                  <strong><UserFilled /> 参与人数</strong>
                   <span><b>{{ post.currentCount }} / {{ post.maxCount }}</b> 人</span>
                 </div>
               </section>
@@ -138,14 +142,17 @@
                 <UserFilled v-for="index in emptyCount" :key="`empty-${index}`" />
               </div>
               <p>还差 <b>{{ emptyCount }}</b> 人即可成局</p>
-              <button class="primary-action"><Promotion /> 申请加入</button>
-              <button class="secondary-action"><Message /> 私信发布者</button>
+              <button class="primary-action" :disabled="requestSubmitting || post.full" @click="applyToJoin">
+                <Promotion /> {{ requestSubmitting ? '申请中...' : post.full ? '已满员' : '申请加入' }}
+              </button>
+              <button class="secondary-action" @click="goChatWithPublisher"><Message /> 私信发布者</button>
             </section>
 
             <section class="author-card">
               <h2>发布者信誉</h2>
               <div class="author-row">
-                <span class="author-avatar">{{ post.avatarText || '星' }}</span>
+                <img v-if="post.publisherAvatarUrl" class="author-avatar" :src="post.publisherAvatarUrl" alt="发布者头像" />
+                <span v-else class="author-avatar">{{ post.avatarText || '星' }}</span>
                 <div>
                   <strong>{{ post.publisherName }}</strong>
                   <p>{{ post.anonymous ? '匿名发布' : post.category }}</p>
@@ -177,7 +184,7 @@
             <article v-for="item in recommendations" :key="item.id" class="recommend-card">
               <span>{{ item.category }}</span>
               <h3>{{ item.title }}</h3>
-              <p>{{ item.currentCount }}/{{ item.maxCount }}人 · {{ item.time }} · {{ item.location }}</p>
+              <p>{{ item.currentCount }}/{{ item.maxCount }}人 · {{ item.time }} · {{ item.location }} · {{ item.aaFee || '费用待定' }}</p>
               <footer>
                 <small>发布者：{{ item.publisherName }}</small>
                 <button @click="goPost(item.id)">去看看</button>
@@ -201,7 +208,7 @@
         </label>
         <div class="share-preview">
           <strong>{{ post.title }}</strong>
-          <span>{{ post.category }} · {{ post.currentCount }}/{{ post.maxCount }}人 · {{ post.location }}</span>
+          <span>{{ post.category }} · {{ post.currentCount }}/{{ post.maxCount }}人 · {{ post.location }} · {{ post.aaFee || '费用待定' }}</span>
         </div>
       </section>
     </div>
@@ -264,7 +271,6 @@ import {
   Clock,
   Document,
   Flag,
-  Headset,
   HomeFilled,
   Location,
   Lock,
@@ -282,7 +288,7 @@ import {
 } from '@element-plus/icons-vue'
 import logoImage from '../../../assets/images/logo-star-mascot.png'
 import verifyImage from '../../../assets/images/renzheng.png'
-import { fetchHomePlaza, fetchHomePostDetail, submitHomePostReport } from '../../../api/home'
+import { fetchHomePlaza, fetchHomePostDetail, submitHomePostReport, submitMatchPostRequest } from '../../../api/home'
 import { useCurrentUserProfile } from '../../../composables/useCurrentUserProfile'
 import NotificationBell from '../../../components/NotificationBell.vue'
 import UserMenu from '../../../components/UserMenu.vue'
@@ -294,6 +300,7 @@ const loading = ref(false)
 const shareDialogVisible = ref(false)
 const reportDialogVisible = ref(false)
 const reportSubmitting = ref(false)
+const requestSubmitting = ref(false)
 const showVerifyTip = ref(false)
 const post = ref({
   tags: [],
@@ -311,9 +318,8 @@ const reportForm = ref({
 const navItems = [
   { label: '广场首页', icon: HomeFilled, route: '/home', active: true },
   { label: '发布需求', icon: Promotion },
-  { label: '我的聊天', icon: Message },
-  { label: '我的匹配', icon: StarFilled },
-  { label: '倾诉广场', icon: Headset },
+  { label: '我的聊天', icon: Message, route: '/chat' },
+  { label: '我的匹配', icon: StarFilled, route: '/my-match' },
   { label: '认证中心', icon: Lock, route: '/auth-center' },
   { label: '安全反馈', icon: Flag },
   { label: '个人中心', icon: User, route: '/profile' }
@@ -402,6 +408,38 @@ const goAuthCenter = () => {
 
 const goLogin = () => {
   router.push('/login')
+}
+
+const goChat = () => {
+  router.push('/chat')
+}
+
+const goChatWithPublisher = () => {
+  router.push({
+    path: '/chat',
+    query: {
+      userId: post.value.publisherUserId || post.value.publisherId || post.value.userId,
+      name: post.value.publisherName,
+      badge: post.value.category,
+      source: post.value.title
+    }
+  })
+}
+
+const applyToJoin = async () => {
+  if (requestSubmitting.value || post.value.full) {
+    return
+  }
+  requestSubmitting.value = true
+  try {
+    await submitMatchPostRequest(route.params.id)
+    ElMessage.success('申请已发送，等待发起者同意后才会成功匹配')
+    router.push('/my-match')
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '申请加入失败，请稍后重试')
+  } finally {
+    requestSubmitting.value = false
+  }
 }
 
 const openShareDialog = () => {
@@ -960,7 +998,7 @@ onMounted(() => {
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
   padding: 18px 0;
   border-bottom: 1px solid #ece7f8;
@@ -1196,6 +1234,7 @@ onMounted(() => {
   background: linear-gradient(145deg, #ded7ff, #f3edff);
   font-size: 24px;
   font-weight: 900;
+  object-fit: cover;
 }
 
 .author-row div {

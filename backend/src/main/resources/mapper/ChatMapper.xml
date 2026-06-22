@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campusmate.mapper.ChatMapper">
+
+    <select id="selectUserProfile" resultType="com.campusmate.domain.entity.UserProfile">
+        select
+            user_id,
+            avatar_url,
+            nickname,
+            gender,
+            grade,
+            college,
+            major,
+            interest_tags,
+            bio,
+            real_name,
+            verified,
+            verify_status
+        from user_profile
+        where user_id = #{userId}
+        limit 1
+    </select>
+
+    <select id="selectConversationById" resultType="com.campusmate.domain.entity.ChatConversation">
+        select
+            conversation_id,
+            starter_user_id,
+            target_user_id,
+            source_type,
+            source_id,
+            source_title,
+            last_message,
+            last_message_type,
+            last_message_at,
+            created_at,
+            updated_at
+        from chat_conversation
+        where conversation_id = #{conversationId}
+        limit 1
+    </select>
+
+    <select id="selectConversationBetweenUsers" resultType="java.lang.Long">
+        select conversation_id
+        from chat_conversation
+        where least(starter_user_id, target_user_id) = least(#{userA}, #{userB})
+          and greatest(starter_user_id, target_user_id) = greatest(#{userA}, #{userB})
+        order by conversation_id desc
+        limit 1
+    </select>
+
+    <insert id="insertConversation" parameterType="com.campusmate.domain.entity.ChatConversation" useGeneratedKeys="true" keyProperty="conversationId">
+        insert into chat_conversation
+        (starter_user_id, target_user_id, source_type, source_id, source_title, last_message, last_message_type, last_message_at)
+        values
+        (#{starterUserId}, #{targetUserId}, #{sourceType}, #{sourceId}, #{sourceTitle}, '', 'text', now())
+    </insert>
+
+    <insert id="insertConversationMember">
+        insert into chat_conversation_member
+        (conversation_id, user_id, archived, unread_count, last_read_at)
+        values
+        (#{conversationId}, #{userId}, 0, 0, now())
+    </insert>
+
+    <insert id="upsertConversationMember">
+        insert into chat_conversation_member
+        (conversation_id, user_id, archived, unread_count, last_read_at)
+        values
+        (#{conversationId}, #{userId}, 0, 0, now())
+        on duplicate key update archived = 0, updated_at = now()
+    </insert>
+
+    <select id="countConversationMember" resultType="int">
+        select count(1)
+        from chat_conversation_member
+        where conversation_id = #{conversationId}
+          and user_id = #{userId}
+    </select>
+
+    <select id="selectConversations" resultType="com.campusmate.domain.vo.ChatVO$ConversationVO">
+        select
+            c.conversation_id as id,
+            case when c.starter_user_id = #{userId} then c.target_user_id else c.starter_user_id end as peer_user_id,
+            p.nickname as name,
+            p.avatar_url as avatar_url,
+            left(p.nickname, 1) as avatar_text,
+            coalesce(nullif(c.source_type, ''), '校园伙伴') as badge,
+            c.last_message as preview,
+            date_format(c.last_message_at, '%H:%i') as time,
+            m.unread_count as unread,
+            m.archived as archived,
+            p.gender,
+            null as age,
+            coalesce(p.college, '校园') as school,
+            p.grade,
+            p.major,
+            date_format(c.created_at, '%Y年%c月%e日') as match_date,
+            c.source_title as source,
+            p.interest_tags as common_tags_text
+        from chat_conversation_member m
+        join chat_conversation c on c.conversation_id = m.conversation_id
+        join user_profile p on p.user_id = case when c.starter_user_id = #{userId} then c.target_user_id else c.starter_user_id end
+        where m.user_id = #{userId}
+          and m.archived = #{archived}
+        order by c.last_message_at desc, c.conversation_id desc
+    </select>
+
+    <select id="selectMessages" resultType="com.campusmate.domain.entity.ChatMessage">
+        select
+            message_id,
+            conversation_id,
+            sender_user_id,
+            receiver_user_id,
+            message_type,
+            content,
+            attachment_url,
+            attachment_name,
+            latitude,
+            longitude,
+            send_status,
+            created_at
+        from chat_message
+        where conversation_id = #{conversationId}
+        order by message_id
+    </select>
+
+    <insert id="insertMessage" parameterType="com.campusmate.domain.entity.ChatMessage" useGeneratedKeys="true" keyProperty="messageId">
+        insert into chat_message
+        (conversation_id, sender_user_id, receiver_user_id, message_type, content, attachment_url, attachment_name, latitude, longitude, send_status)
+        values
+        (#{conversationId}, #{senderUserId}, #{receiverUserId}, #{messageType}, #{content}, #{attachmentUrl}, #{attachmentName}, #{latitude}, #{longitude}, #{sendStatus})
+    </insert>
+
+    <update id="updateConversationLastMessage" parameterType="com.campusmate.domain.entity.ChatMessage">
+        update chat_conversation
+        set
+            last_message = #{content},
+            last_message_type = #{messageType},
+            last_message_at = #{createdAt},
+            updated_at = now()
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="incrementUnread">
+        update chat_conversation_member
+        set unread_count = unread_count + 1,
+            archived = 0,
+            updated_at = now()
+        where conversation_id = #{conversationId}
+          and user_id = #{userId}
+    </update>
+
+    <update id="markRead">
+        update chat_conversation_member
+        set unread_count = 0,
+            last_read_at = now(),
+            updated_at = now()
+        where conversation_id = #{conversationId}
+          and user_id = #{userId}
+    </update>
+
+    <update id="updateArchiveStatus">
+        update chat_conversation_member
+        set archived = #{archived},
+            updated_at = now()
+        where conversation_id = #{conversationId}
+          and user_id = #{userId}
+    </update>
+</mapper>

@@ -2,9 +2,11 @@ package com.campusmate.controller;
 
 import com.campusmate.common.result.Result;
 import com.campusmate.domain.dto.HomePlazaQuery;
+import com.campusmate.domain.dto.HomePostCreateRequest;
 import com.campusmate.domain.dto.HomePostReportRequest;
 import com.campusmate.domain.dto.HomePostReplyRequest;
 import com.campusmate.domain.entity.HomePostReport;
+import com.campusmate.domain.vo.HomeMatchVO;
 import com.campusmate.domain.vo.HomePlazaVO;
 import com.campusmate.service.HomeService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,6 +55,17 @@ public class HomeController {
         return Result.ok(homeService.getVentPostDetail(id, currentUserId));
     }
 
+    @PostMapping("/posts")
+    public Result<HomePlazaVO.HomePostVO> createPost(
+            @RequestBody HomePostCreateRequest request,
+            @RequestHeader(value = "X-CampusMate-User-Id", required = false) Long currentUserId
+    ) {
+        if (request != null && currentUserId != null) {
+            request.setUserId(currentUserId);
+        }
+        return Result.ok(homeService.createPost(request));
+    }
+
     @PostMapping("/vent-posts/{id}/comforts")
     public Result<HomePlazaVO.HomePostComfortVO> submitVentPostComfort(
             @PathVariable Long id,
@@ -98,5 +111,36 @@ public class HomeController {
             request.setUserId(currentUserId);
         }
         return Result.ok(homeService.submitMatchPostReport(id, request));
+    }
+
+    @GetMapping("/my-matches")
+    public Result<HomeMatchVO> getMyMatches(
+            @RequestHeader(value = "X-CampusMate-User-Id", required = false) Long currentUserId
+    ) {
+        return Result.ok(homeService.getMyMatches(currentUserId));
+    }
+
+    @PostMapping("/match-posts/{id}/requests")
+    public Result<HomeMatchVO.MatchCardVO> submitMatchPostRequest(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-CampusMate-User-Id", required = false) Long currentUserId
+    ) {
+        return Result.ok(homeService.submitMatchPostRequest(id, currentUserId));
+    }
+
+    @PostMapping("/match-requests/{id}/approve")
+    public Result<HomeMatchVO.MatchCardVO> approveMatchRequest(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-CampusMate-User-Id", required = false) Long currentUserId
+    ) {
+        return Result.ok(homeService.approveMatchRequest(id, currentUserId));
+    }
+
+    @PostMapping("/match-requests/{id}/reject")
+    public Result<HomeMatchVO.MatchCardVO> rejectMatchRequest(
+            @PathVariable Long id,
+            @RequestHeader(value = "X-CampusMate-User-Id", required = false) Long currentUserId
+    ) {
+        return Result.ok(homeService.rejectMatchRequest(id, currentUserId));
     }
 }

@@ -44,7 +44,7 @@
               <input v-model="keyword" placeholder="搜索需求、活动或用户" />
               <Search />
             </label>
-            <button class="plain-icon" aria-label="我的聊天"><Message /></button>
+            <button class="plain-icon" aria-label="我的聊天" @click="goChat"><Message /></button>
             <NotificationBell />
             <button class="profile-chip" aria-label="个人菜单">
               <img v-if="authSummary.avatarUrl" class="profile-avatar" :src="authSummary.avatarUrl" alt="头像" />
@@ -239,7 +239,6 @@ import {
   DataLine,
   Document,
   Flag,
-  Headset,
   HomeFilled,
   InfoFilled,
   Lock,
@@ -276,9 +275,8 @@ const uploadedMaterial = reactive({
 const navItems = [
   { label: '广场首页', icon: HomeFilled, route: '/home' },
   { label: '发布需求', icon: Promotion },
-  { label: '我的聊天', icon: Message },
+  { label: '我的聊天', icon: Message, route: '/chat' },
   { label: '我的匹配', icon: StarFilled },
-  { label: '倾诉广场', icon: Headset },
   { label: '认证中心', icon: Lock, active: true },
   { label: '安全反馈', icon: Flag },
   { label: '个人中心', icon: User, route: '/profile' }
@@ -491,6 +489,10 @@ const handleNav = (item) => {
   if (item.route) {
     router.push(item.route)
   }
+}
+
+const goChat = () => {
+  router.push('/chat')
 }
 
 onMounted(loadAuthCenter)

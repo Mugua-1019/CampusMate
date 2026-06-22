@@ -41,7 +41,7 @@
               <input v-model="keyword" placeholder="搜索需求、活动或用户" />
               <Search />
             </label>
-            <button class="plain-icon" aria-label="我的聊天"><Message /></button>
+            <button class="plain-icon" aria-label="我的聊天" @click="goChat"><Message /></button>
             <NotificationBell />
             <UserMenu
               v-if="isLoggedIn"
@@ -111,10 +111,12 @@
             <div class="meta-line">
               <span><Location />{{ post.location }}</span>
               <span><Clock />{{ post.time }}</span>
+              <span v-if="post.aaFee"><Wallet />{{ post.aaFee }}</span>
             </div>
             <footer>
               <div class="publisher">
-                <span class="avatar">{{ post.avatarText }}</span>
+                <img v-if="post.publisherAvatarUrl" class="avatar" :src="post.publisherAvatarUrl" alt="发布者头像" />
+                <span v-else class="avatar">{{ post.avatarText }}</span>
                 <strong>{{ post.publisherName }}</strong>
               </div>
               <span class="count">{{ post.currentCount }}/{{ post.maxCount }}人</span>
@@ -181,7 +183,7 @@
             <li>保护个人隐私与财产安全</li>
             <li>遇到不适随时举报</li>
           </ul>
-          <button>查看安全指南 <ArrowRight /></button>
+          <button @click="goSafetyFeedback">查看安全指南 <ArrowRight /></button>
         </section>
 
         <section class="side-card mood-card">
@@ -194,7 +196,7 @@
         </section>
       </aside>
 
-      <button class="publish-button" @click="showVerifyTip = true">
+      <button class="publish-button" @click="goPublish">
         <Promotion />
         发布星伴需求
       </button>
@@ -225,7 +227,6 @@ import {
   Clock,
   Filter,
   Flag,
-  Headset,
   HomeFilled,
   Location,
   Lock,
@@ -233,7 +234,8 @@ import {
   Promotion,
   Search,
   StarFilled,
-  User
+  User,
+  Wallet
 } from '@element-plus/icons-vue'
 import logoImage from '../../../assets/images/logo-star-mascot.png'
 import verifyImage from '../../../assets/images/renzheng.png'
@@ -263,12 +265,11 @@ const userSummary = ref({
 
 const navItems = [
   { label: '广场首页', icon: HomeFilled, active: true },
-  { label: '发布需求', icon: Promotion },
-  { label: '我的聊天', icon: Message },
-  { label: '我的匹配', icon: StarFilled },
-  { label: '倾诉广场', icon: Headset },
+  { label: '发布需求', icon: Promotion, route: '/publish' },
+  { label: '我的聊天', icon: Message, route: '/chat' },
+  { label: '我的匹配', icon: StarFilled, route: '/my-match' },
   { label: '认证中心', icon: Lock, route: '/auth-center' },
-  { label: '安全反馈', icon: Flag },
+  { label: '安全反馈', icon: Flag, route: '/safety-feedback' },
   { label: '个人中心', icon: User, route: '/profile' }
 ]
 
@@ -312,7 +313,15 @@ const handleChat = (post) => {
     showVerifyTip.value = true
     return
   }
-  ElMessage.info('聊天功能正在接入中')
+  router.push({
+    path: '/chat',
+    query: {
+      userId: post.publisherUserId || post.publisherId || post.userId,
+      name: post.publisherName,
+      badge: post.category,
+      source: post.title
+    }
+  })
 }
 
 const goPostDetail = (post) => {
@@ -350,6 +359,18 @@ const handleUserStatusClick = () => {
 
 const goLogin = () => {
   router.push('/login')
+}
+
+const goPublish = () => {
+  router.push('/publish')
+}
+
+const goChat = () => {
+  router.push('/chat')
+}
+
+const goSafetyFeedback = () => {
+  router.push('/safety-feedback')
 }
 
 const handleNav = (item) => {
@@ -981,6 +1002,7 @@ onMounted(loadHomePlaza)
   background: #f0e9ff;
   font-size: 13px;
   font-weight: 900;
+  object-fit: cover;
 }
 
 .publisher strong {

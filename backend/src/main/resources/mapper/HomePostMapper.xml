@@ -9,6 +9,7 @@
             id,
             plaza,
             publisher_user_id,
+            (select avatar_url from user_profile p where p.user_id = home_post.publisher_user_id limit 1) as publisher_avatar_url,
             category,
             title,
             status,
@@ -16,6 +17,7 @@
             description,
             expected_time,
             expected_location,
+            aa_fee,
             publisher_name,
             publisher_status,
             publisher_status_note,
@@ -53,6 +55,7 @@
             id,
             plaza,
             publisher_user_id,
+            (select avatar_url from user_profile p where p.user_id = home_post.publisher_user_id limit 1) as publisher_avatar_url,
             category,
             title,
             status,
@@ -60,6 +63,7 @@
             description,
             expected_time,
             expected_location,
+            aa_fee,
             publisher_name,
             publisher_status,
             publisher_status_note,
@@ -85,6 +89,7 @@
             id,
             plaza,
             publisher_user_id,
+            (select avatar_url from user_profile p where p.user_id = home_post.publisher_user_id limit 1) as publisher_avatar_url,
             category,
             title,
             status,
@@ -92,6 +97,7 @@
             description,
             expected_time,
             expected_location,
+            aa_fee,
             publisher_name,
             publisher_status,
             publisher_status_note,
@@ -117,6 +123,7 @@
             id,
             plaza,
             publisher_user_id,
+            (select avatar_url from user_profile p where p.user_id = home_post.publisher_user_id limit 1) as publisher_avatar_url,
             category,
             title,
             status,
@@ -124,6 +131,7 @@
             description,
             expected_time,
             expected_location,
+            aa_fee,
             publisher_name,
             publisher_status,
             publisher_status_note,
@@ -222,6 +230,18 @@
           and read_status = 'unread'
     </update>
 
+    <insert id="insertPost" parameterType="com.campusmate.domain.entity.HomePost" useGeneratedKeys="true" keyProperty="id">
+        insert into home_post
+        (plaza, publisher_user_id, category, title, status, tags, description, expected_time, expected_location,
+         aa_fee, publisher_name, publisher_status, publisher_status_note, avatar_text, anonymous, verified, current_count,
+         max_count, current_state, hope_you_can, preferred_way, gentle_replies, review_status, sort_weight, deleted)
+        values
+        (#{plaza}, #{publisherUserId}, #{category}, #{title}, #{status}, #{tags}, #{description}, #{expectedTime},
+         #{expectedLocation}, #{aaFee}, #{publisherName}, #{publisherStatus}, #{publisherStatusNote}, #{avatarText},
+         #{anonymous}, #{verified}, #{currentCount}, #{maxCount}, #{currentState}, #{hopeYouCan}, #{preferredWay},
+         #{gentleReplies}, 'visible', 100, 0)
+    </insert>
+
     <insert id="insertReply" parameterType="com.campusmate.domain.entity.HomePostReply" useGeneratedKeys="true" keyProperty="id">
         insert into home_post_reply
         (post_id, user_id, author_name, avatar_text, content, like_count, review_status, deleted, created_at, updated_at)
@@ -235,4 +255,197 @@
         values
         (#{postId}, #{reporterUserId}, #{reason}, #{detail}, #{contact}, #{status}, #{createdAt})
     </insert>
+
+    <select id="selectMatchRequestByPostAndRequester" resultType="com.campusmate.domain.entity.HomeMatchRequest">
+        select
+            request_id,
+            post_id,
+            requester_user_id,
+            status,
+            created_at,
+            updated_at
+        from home_match_request
+        where post_id = #{postId}
+          and requester_user_id = #{requesterUserId}
+        limit 1
+    </select>
+
+    <select id="selectMatchRequestDetailById" resultType="com.campusmate.domain.entity.HomeMatchRequest">
+        select
+            r.request_id,
+            r.post_id,
+            r.requester_user_id,
+            r.status,
+            r.created_at,
+            r.updated_at,
+            p.publisher_user_id,
+            p.title,
+            p.category,
+            p.description,
+            p.expected_time,
+            p.expected_location,
+            req.nickname as requester_name,
+            req.avatar_url as requester_avatar_url,
+            pub.nickname as publisher_name,
+            pub.avatar_url as publisher_avatar_url,
+            (
+                select count(1)
+                from home_match_request c
+                where c.post_id = r.post_id
+            ) as request_count
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        join user_profile req on req.user_id = r.requester_user_id
+        left join user_profile pub on pub.user_id = p.publisher_user_id
+        where r.request_id = #{requestId}
+        limit 1
+    </select>
+
+    <select id="selectStartedMatchRequests" resultType="com.campusmate.domain.entity.HomeMatchRequest">
+        select
+            r.request_id,
+            r.post_id,
+            r.requester_user_id,
+            r.status,
+            r.created_at,
+            r.updated_at,
+            p.publisher_user_id,
+            p.title,
+            p.category,
+            p.description,
+            p.expected_time,
+            p.expected_location,
+            req.nickname as requester_name,
+            req.avatar_url as requester_avatar_url,
+            pub.nickname as publisher_name,
+            pub.avatar_url as publisher_avatar_url,
+            (
+                select count(1)
+                from home_match_request c
+                where c.post_id = r.post_id
+            ) as request_count
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        join user_profile req on req.user_id = r.requester_user_id
+        left join user_profile pub on pub.user_id = p.publisher_user_id
+        where p.publisher_user_id = #{userId}
+          and p.plaza = 'match'
+          and p.deleted = 0
+          and p.review_status = 'visible'
+        order by case r.status when 'pending' then 0 when 'approved' then 1 else 2 end, r.updated_at desc, r.request_id desc
+        limit 20
+    </select>
+
+    <select id="selectJoinedMatchRequests" resultType="com.campusmate.domain.entity.HomeMatchRequest">
+        select
+            r.request_id,
+            r.post_id,
+            r.requester_user_id,
+            r.status,
+            r.created_at,
+            r.updated_at,
+            p.publisher_user_id,
+            p.title,
+            p.category,
+            p.description,
+            p.expected_time,
+            p.expected_location,
+            req.nickname as requester_name,
+            req.avatar_url as requester_avatar_url,
+            pub.nickname as publisher_name,
+            pub.avatar_url as publisher_avatar_url,
+            (
+                select count(1)
+                from home_match_request c
+                where c.post_id = r.post_id
+            ) as request_count
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        join user_profile req on req.user_id = r.requester_user_id
+        left join user_profile pub on pub.user_id = p.publisher_user_id
+        where r.requester_user_id = #{userId}
+          and p.plaza = 'match'
+          and p.deleted = 0
+          and p.review_status = 'visible'
+        order by r.updated_at desc, r.request_id desc
+        limit 20
+    </select>
+
+    <select id="selectRecentApprovedMatchRequests" resultType="com.campusmate.domain.entity.HomeMatchRequest">
+        select
+            r.request_id,
+            r.post_id,
+            r.requester_user_id,
+            r.status,
+            r.created_at,
+            r.updated_at,
+            p.title,
+            p.category,
+            req.avatar_url as requester_avatar_url,
+            pub.avatar_url as publisher_avatar_url
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        join user_profile req on req.user_id = r.requester_user_id
+        left join user_profile pub on pub.user_id = p.publisher_user_id
+        where r.status = 'approved'
+          and (r.requester_user_id = #{userId} or p.publisher_user_id = #{userId})
+        order by r.updated_at desc, r.request_id desc
+        limit 5
+    </select>
+
+    <select id="countStartedMatchPosts" resultType="int">
+        select count(1)
+        from home_post
+        where publisher_user_id = #{userId}
+          and plaza = 'match'
+          and deleted = 0
+          and review_status = 'visible'
+    </select>
+
+    <select id="countMatchRequestsByStatus" resultType="int">
+        select count(1)
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        where (r.requester_user_id = #{userId} or p.publisher_user_id = #{userId})
+          and r.status = #{status}
+    </select>
+
+    <insert id="insertMatchRequest" parameterType="com.campusmate.domain.entity.HomeMatchRequest" useGeneratedKeys="true" keyProperty="requestId">
+        insert into home_match_request
+        (post_id, requester_user_id, status, created_at, updated_at)
+        values
+        (#{postId}, #{requesterUserId}, #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="approveMatchRequest">
+        update home_match_request r
+        join home_post p on p.id = r.post_id
+        set r.status = 'approved',
+            r.updated_at = now()
+        where r.request_id = #{requestId}
+          and p.publisher_user_id = #{publisherUserId}
+          and r.status = 'pending'
+    </update>
+
+    <update id="rejectMatchRequest">
+        update home_match_request r
+        join home_post p on p.id = r.post_id
+        set r.status = 'rejected',
+            r.updated_at = now()
+        where r.request_id = #{requestId}
+          and p.publisher_user_id = #{publisherUserId}
+          and r.status = 'pending'
+    </update>
+
+    <update id="incrementMatchPostCount">
+        update home_post
+        set current_count = current_count + 1,
+            status = case when current_count + 1 >= max_count then 'full' else status end,
+            updated_at = now()
+        where id = #{postId}
+          and plaza = 'match'
+          and deleted = 0
+          and review_status = 'visible'
+          and current_count &lt; max_count
+    </update>
 </mapper>

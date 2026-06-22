@@ -213,7 +213,10 @@ public class HomePlazaVO {
         private String description;
         private String time;
         private String location;
+        private String aaFee;
+        private Long publisherUserId;
         private String publisherName;
+        private String publisherAvatarUrl;
         private String publisherStatus;
         private String publisherStatusNote;
         private String avatarText;
@@ -301,12 +304,36 @@ public class HomePlazaVO {
             this.location = location;
         }
 
+        public String getAaFee() {
+            return aaFee;
+        }
+
+        public void setAaFee(String aaFee) {
+            this.aaFee = aaFee;
+        }
+
+        public Long getPublisherUserId() {
+            return publisherUserId;
+        }
+
+        public void setPublisherUserId(Long publisherUserId) {
+            this.publisherUserId = publisherUserId;
+        }
+
         public String getPublisherName() {
             return publisherName;
         }
 
         public void setPublisherName(String publisherName) {
             this.publisherName = publisherName;
+        }
+
+        public String getPublisherAvatarUrl() {
+            return publisherAvatarUrl;
+        }
+
+        public void setPublisherAvatarUrl(String publisherAvatarUrl) {
+            this.publisherAvatarUrl = publisherAvatarUrl;
         }
 
         public String getPublisherStatus() {

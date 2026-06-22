@@ -1,7 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/user/home/HomeView.vue'
+import PublishPostView from '../views/user/home/PublishPostView.vue'
+import MyMatchView from '../views/user/home/MyMatchView.vue'
+import SecurityFeedbackView from '../views/user/home/SecurityFeedbackView.vue'
 import MatchPostDetailView from '../views/user/home/MatchPostDetailView.vue'
 import VentPostDetailView from '../views/user/home/VentPostDetailView.vue'
+import ChatView from '../views/user/chat/ChatView.vue'
 import LoginView from '../views/user/login/LoginView.vue'
 import ProfileView from '../views/user/profile/ProfileView.vue'
 import AuthenticationView from '../views/user/authCenter/AuthenticationView.vue'
@@ -26,6 +30,26 @@ const routes = [
     path: '/home',
     name: 'home',
     component: HomeView
+  },
+  {
+    path: '/publish',
+    name: 'publish',
+    component: PublishPostView
+  },
+  {
+    path: '/my-match',
+    name: 'myMatch',
+    component: MyMatchView
+  },
+  {
+    path: '/safety-feedback',
+    name: 'safetyFeedback',
+    component: SecurityFeedbackView
+  },
+  {
+    path: '/chat',
+    name: 'chat',
+    component: ChatView
   },
   {
     path: '/match-post/:id',

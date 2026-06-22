@@ -30,7 +30,7 @@
               <input v-model="keyword" placeholder="搜索需求、活动或用户" />
               <Search />
             </label>
-            <button class="plain-icon" aria-label="我的聊天"><Message /></button>
+            <button class="plain-icon" aria-label="我的聊天" @click="goChat"><Message /></button>
             <NotificationBell />
             <UserMenu
               v-if="isLoggedIn"
@@ -57,7 +57,8 @@
               </button>
 
               <div class="author-line">
-                <span class="author-avatar">{{ post.avatarText || '匿' }}</span>
+                <img v-if="post.publisherAvatarUrl" class="author-avatar" :src="post.publisherAvatarUrl" alt="发布者头像" />
+                <span v-else class="author-avatar">{{ post.avatarText || '匿' }}</span>
                 <div>
                   <strong>{{ post.publisherName || '匿名同学' }} <CircleCheckFilled /></strong>
                   <p>{{ post.publisherStatus || '等待倾听中' }} · 收获 {{ post.currentCount || 0 }} 个安慰 · 仅心灵伙伴可见</p>
@@ -96,7 +97,7 @@
             </article>
 
             <section class="action-card">
-              <button class="primary-action"><Promotion /> 聊一聊</button>
+              <button class="primary-action" @click="goChatWithPublisher"><Promotion /> 聊一聊</button>
               <button class="comfort-action" :disabled="comfortSubmitting" @click="sendComfort">
                 <span class="heart-icon" aria-hidden="true">♡</span>
                 {{ comfortSubmitting ? '发送中...' : '发送安慰' }}
@@ -206,7 +207,6 @@ import {
   CircleCheckFilled,
   Clock,
   Flag,
-  Headset,
   HomeFilled,
   Lock,
   Message,
@@ -244,9 +244,8 @@ const {
 const navItems = [
   { label: '广场首页', icon: HomeFilled, route: '/home', active: true },
   { label: '发布需求', icon: Promotion },
-  { label: '我的聊天', icon: Message },
+  { label: '我的聊天', icon: Message, route: '/chat' },
   { label: '我的匹配', icon: StarFilled },
-  { label: '倾诉广场', icon: Headset },
   { label: '认证中心', icon: Lock, route: '/auth-center' },
   { label: '安全反馈', icon: Flag },
   { label: '个人中心', icon: User, route: '/profile' }
@@ -384,6 +383,22 @@ const goBack = () => {
 
 const goLogin = () => {
   router.push('/login')
+}
+
+const goChat = () => {
+  router.push('/chat')
+}
+
+const goChatWithPublisher = () => {
+  router.push({
+    path: '/chat',
+    query: {
+      userId: post.value.publisherUserId || post.value.publisherId || post.value.userId,
+      name: post.value.publisherName,
+      badge: post.value.category,
+      source: post.value.title
+    }
+  })
 }
 
 const handleNav = (item) => {
@@ -685,6 +700,7 @@ onMounted(() => {
   background: #e6ddff;
   font-size: 24px;
   font-weight: 900;
+  object-fit: cover;
 }
 
 .author-line strong {

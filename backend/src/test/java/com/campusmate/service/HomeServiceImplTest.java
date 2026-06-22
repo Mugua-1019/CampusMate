@@ -1,9 +1,11 @@
 package com.campusmate.service;
 
 import com.campusmate.domain.dto.HomePlazaQuery;
+import com.campusmate.domain.dto.HomePostCreateRequest;
 import com.campusmate.domain.dto.HomePostReportRequest;
 import com.campusmate.domain.dto.HomePostReplyRequest;
 import com.campusmate.domain.entity.HomeNotification;
+import com.campusmate.domain.entity.HomeMatchRequest;
 import com.campusmate.domain.entity.HomePendingMeet;
 import com.campusmate.domain.entity.HomePlazaCategory;
 import com.campusmate.domain.entity.HomePlazaTab;
@@ -13,6 +15,7 @@ import com.campusmate.domain.entity.HomePostReply;
 import com.campusmate.domain.entity.HomeUserStat;
 import com.campusmate.domain.entity.HomeUserSummary;
 import com.campusmate.domain.entity.UserProfile;
+import com.campusmate.domain.vo.HomeMatchVO;
 import com.campusmate.domain.vo.HomePlazaVO;
 import com.campusmate.mapper.HomeConfigMapper;
 import com.campusmate.mapper.HomePostMapper;
@@ -150,6 +153,65 @@ class HomeServiceImplTest {
     }
 
     @Test
+    void createMatchPostStoresFieldsUsedByMatchPlaza() {
+        CapturingHomePostMapper postMapper = new CapturingHomePostMapper(List.of());
+        HomeService service = new HomeServiceImpl(postMapper, new FakeHomeConfigMapper());
+        HomePostCreateRequest request = new HomePostCreateRequest();
+        request.setUserId(6L);
+        request.setPlaza("match");
+        request.setCategory("运动搭子");
+        request.setTitle("周五晚找羽毛球搭子");
+        request.setDescription("新手友好，地点可以商量。");
+        request.setTime("周五 19:00");
+        request.setLocation("体育馆 2 号场");
+        request.setAaFee("AA制，约 15 元/人");
+        request.setMaxCount(4);
+        request.setAnonymous(false);
+        request.setTags(List.of("新手友好", "校内"));
+
+        HomePlazaVO.HomePostVO result = service.createPost(request);
+
+        assertEquals(1L, result.getId());
+        assertEquals("match", result.getPlaza());
+        assertEquals("运动搭子", result.getCategory());
+        assertEquals("周五 19:00", result.getTime());
+        assertEquals("体育馆 2 号场", result.getLocation());
+        assertEquals("AA制，约 15 元/人", result.getAaFee());
+        assertEquals(4, result.getMaxCount());
+        assertEquals("新手友好,校内", postMapper.insertedPost.getTags());
+        assertEquals("AA制，约 15 元/人", postMapper.insertedPost.getAaFee());
+        assertFalse(result.isAnonymous());
+    }
+
+    @Test
+    void createVentPostStoresFieldsUsedByVentDetail() {
+        CapturingHomePostMapper postMapper = new CapturingHomePostMapper(List.of());
+        HomeService service = new HomeServiceImpl(postMapper, new FakeHomeConfigMapper());
+        HomePostCreateRequest request = new HomePostCreateRequest();
+        request.setUserId(6L);
+        request.setPlaza("vent");
+        request.setCategory("考试焦虑");
+        request.setTitle("考试压力有点大");
+        request.setDescription("想找个人听我说说。");
+        request.setAnonymous(true);
+        request.setTags(List.of("考试焦虑", "在线文字"));
+        request.setCurrentState(List.of("考试焦虑"));
+        request.setHopeYouCan(List.of("只倾听", "不需要建议"));
+        request.setPreferredWay(List.of("在线文字", "今晚可聊"));
+
+        HomePlazaVO.HomePostVO result = service.createPost(request);
+
+        assertEquals("vent", result.getPlaza());
+        assertEquals("匿名同学", result.getPublisherName());
+        assertEquals("随时", result.getTime());
+        assertEquals("在线文字", result.getLocation());
+        assertEquals(List.of("考试焦虑"), result.getCurrentState());
+        assertEquals(List.of("只倾听", "不需要建议"), result.getHopeYouCan());
+        assertEquals(List.of("在线文字", "今晚可聊"), result.getPreferredWay());
+        assertEquals("匿", postMapper.insertedPost.getAvatarText());
+    }
+
+    @Test
     void submitVentPostComfortIncrementsCountAndCreatesOwnerNotification() {
         HomePost post = post(31L, "vent", "comfort-test", "matching", true, false, 4, 20);
         post.setPublisherUserId(22L);
@@ -241,6 +303,37 @@ class HomeServiceImplTest {
         assertEquals("reason is required", exception.getMessage());
     }
 
+    @Test
+    void submitMatchPostRequestCreatesPendingRequestWithoutCountingSuccess() {
+        HomePost post = post(41L, "match", "学习搭子", "matching", false, true, 1, 3);
+        post.setPublisherUserId(31L);
+        CapturingHomePostMapper postMapper = new CapturingHomePostMapper(List.of(post));
+        HomeService service = new HomeServiceImpl(postMapper, new FakeHomeConfigMapper());
+
+        HomeMatchVO.MatchCardVO result = service.submitMatchPostRequest(41L, 50L);
+
+        assertEquals(41L, result.getPostId());
+        assertEquals("pending", result.getStatus());
+        assertEquals("等待发起者同意", result.getStateText());
+        assertEquals(1, post.getCurrentCount());
+    }
+
+    @Test
+    void approveMatchRequestRequiresPublisherAndIncrementsCount() {
+        HomePost post = post(42L, "match", "运动搭子", "matching", false, true, 1, 3);
+        post.setPublisherUserId(31L);
+        CapturingHomePostMapper postMapper = new CapturingHomePostMapper(List.of(post));
+        HomeMatchRequest request = matchRequest(1L, 42L, 50L, 31L, "pending");
+        postMapper.matchRequests.add(request);
+        HomeService service = new HomeServiceImpl(postMapper, new FakeHomeConfigMapper());
+
+        HomeMatchVO.MatchCardVO result = service.approveMatchRequest(1L, 31L);
+
+        assertEquals("approved", result.getStatus());
+        assertEquals("已成功匹配", result.getStateText());
+        assertEquals(2, post.getCurrentCount());
+    }
+
     private HomePost post(Long id, String plaza, String category, String status, boolean anonymous,
                           boolean verified, int currentCount, int maxCount) {
         HomePost post = new HomePost();
@@ -262,13 +355,33 @@ class HomeServiceImplTest {
         return post;
     }
 
+    private HomeMatchRequest matchRequest(Long requestId, Long postId, Long requesterUserId, Long publisherUserId, String status) {
+        HomeMatchRequest request = new HomeMatchRequest();
+        request.setRequestId(requestId);
+        request.setPostId(postId);
+        request.setRequesterUserId(requesterUserId);
+        request.setPublisherUserId(publisherUserId);
+        request.setStatus(status);
+        request.setTitle("测试需求");
+        request.setCategory("学习搭子");
+        request.setDescription("测试描述");
+        request.setExpectedTime("今晚");
+        request.setExpectedLocation("图书馆");
+        request.setRequesterName("申请同学");
+        request.setPublisherName("发布同学");
+        request.setRequestCount(1);
+        return request;
+    }
+
     private static class CapturingHomePostMapper implements HomePostMapper {
         private final List<HomePost> posts;
         private HomePlazaQuery capturedQuery;
         private HomePostReport insertedReport;
         private HomePostReply insertedReply;
+        private HomePost insertedPost;
         private int insertedNotificationCount;
         private UserProfile verifyProfile;
+        private final java.util.List<HomeMatchRequest> matchRequests = new java.util.ArrayList<>();
 
         private CapturingHomePostMapper(List<HomePost> posts) {
             this.posts = posts;
@@ -342,6 +455,13 @@ class HomeServiceImplTest {
         }
 
         @Override
+        public int insertPost(HomePost post) {
+            post.setId(1L);
+            this.insertedPost = post;
+            return 1;
+        }
+
+        @Override
         public int insertReply(HomePostReply reply) {
             reply.setId(1L);
             this.insertedReply = reply;
@@ -352,6 +472,110 @@ class HomeServiceImplTest {
         public int insertReport(HomePostReport report) {
             report.setReportId(1L);
             this.insertedReport = report;
+            return 1;
+        }
+
+        @Override
+        public HomeMatchRequest selectMatchRequestByPostAndRequester(Long postId, Long requesterUserId) {
+            return matchRequests.stream()
+                    .filter(request -> postId.equals(request.getPostId()) && requesterUserId.equals(request.getRequesterUserId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public HomeMatchRequest selectMatchRequestDetailById(Long requestId) {
+            return matchRequests.stream()
+                    .filter(request -> requestId.equals(request.getRequestId()))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        @Override
+        public List<HomeMatchRequest> selectStartedMatchRequests(Long userId) {
+            return matchRequests.stream()
+                    .filter(request -> userId.equals(request.getPublisherUserId()))
+                    .toList();
+        }
+
+        @Override
+        public List<HomeMatchRequest> selectJoinedMatchRequests(Long userId) {
+            return matchRequests.stream()
+                    .filter(request -> userId.equals(request.getRequesterUserId()))
+                    .toList();
+        }
+
+        @Override
+        public List<HomeMatchRequest> selectRecentApprovedMatchRequests(Long userId) {
+            return matchRequests.stream()
+                    .filter(request -> "approved".equals(request.getStatus()))
+                    .filter(request -> userId.equals(request.getPublisherUserId()) || userId.equals(request.getRequesterUserId()))
+                    .toList();
+        }
+
+        @Override
+        public int countStartedMatchPosts(Long userId) {
+            return (int) posts.stream()
+                    .filter(post -> userId.equals(post.getPublisherUserId()))
+                    .filter(post -> "match".equals(post.getPlaza()))
+                    .count();
+        }
+
+        @Override
+        public int countMatchRequestsByStatus(Long userId, String status) {
+            return (int) matchRequests.stream()
+                    .filter(request -> status.equals(request.getStatus()))
+                    .filter(request -> userId.equals(request.getPublisherUserId()) || userId.equals(request.getRequesterUserId()))
+                    .count();
+        }
+
+        @Override
+        public int insertMatchRequest(HomeMatchRequest request) {
+            request.setRequestId(1L);
+            HomePost post = selectVisibleMatchPostById(request.getPostId());
+            request.setPublisherUserId(post == null ? null : post.getPublisherUserId());
+            request.setTitle(post == null ? "测试需求" : post.getTitle());
+            request.setCategory(post == null ? "学习搭子" : post.getCategory());
+            request.setDescription(post == null ? "测试描述" : post.getDescription());
+            request.setExpectedTime(post == null ? "今晚" : post.getExpectedTime());
+            request.setExpectedLocation(post == null ? "图书馆" : post.getExpectedLocation());
+            request.setRequesterName("申请同学");
+            request.setPublisherName("发布同学");
+            request.setRequestCount(1);
+            matchRequests.add(request);
+            return 1;
+        }
+
+        @Override
+        public int approveMatchRequest(Long requestId, Long publisherUserId) {
+            HomeMatchRequest request = selectMatchRequestDetailById(requestId);
+            if (request == null || !publisherUserId.equals(request.getPublisherUserId()) || !"pending".equals(request.getStatus())) {
+                return 0;
+            }
+            request.setStatus("approved");
+            return 1;
+        }
+
+        @Override
+        public int rejectMatchRequest(Long requestId, Long publisherUserId) {
+            HomeMatchRequest request = selectMatchRequestDetailById(requestId);
+            if (request == null || !publisherUserId.equals(request.getPublisherUserId()) || !"pending".equals(request.getStatus())) {
+                return 0;
+            }
+            request.setStatus("rejected");
+            return 1;
+        }
+
+        @Override
+        public int incrementMatchPostCount(Long postId) {
+            HomePost post = selectVisibleMatchPostById(postId);
+            if (post == null || post.getCurrentCount() >= post.getMaxCount()) {
+                return 0;
+            }
+            post.setCurrentCount(post.getCurrentCount() + 1);
+            if (post.getCurrentCount() >= post.getMaxCount()) {
+                post.setStatus("full");
+            }
             return 1;
         }
 
