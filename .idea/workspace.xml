@@ -4,89 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8d15c41b-2da2-46dc-8172-0e95ed8cb436" name="更改" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources/1f255313-629c-475a-a89f-f44dead1f552.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/1f255313-629c-475a-a89f-f44dead1f552.xml" afterDir="false" />
+    <list default="true" id="8d15c41b-2da2-46dc-8172-0e95ed8cb436" name="更改" comment="1">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/common/exception/GlobalExceptionHandler.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/common/exception/GlobalExceptionHandler.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/controller/HomeController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/controller/HomeController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/domain/entity/AuthCenterRecord.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/domain/entity/AuthCenterRecord.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/domain/entity/HomePost.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/domain/entity/HomePost.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/domain/entity/HomeUserSummary.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/domain/entity/HomeUserSummary.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/domain/vo/HomePlazaVO.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/domain/vo/HomePlazaVO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/mapper/AuthMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/mapper/AuthMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/mapper/HomePostMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/mapper/HomePostMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/AuthService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/AuthService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/HomeService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/HomeService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/impl/AuthCenterServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/impl/AuthCenterServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/impl/AuthServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/impl/AuthServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/impl/HomeServiceImpl.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/campusmate/service/impl/HomeServiceImpl.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/mapper/AuthCenterMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/mapper/AuthCenterMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/mapper/AuthMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/mapper/AuthMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/mapper/HomeConfigMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/mapper/HomeConfigMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/mapper/HomePostMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/mapper/HomePostMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/campusmate/service/AuthCenterServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/campusmate/service/AuthCenterServiceImplTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/campusmate/service/AuthServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/campusmate/service/AuthServiceImplTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/campusmate/service/HomeServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/campusmate/service/HomeServiceImplTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/src/test/java/com/campusmate/service/ProfileServiceImplTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/campusmate/service/ProfileServiceImplTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/common/exception/GlobalExceptionHandler.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/common/exception/GlobalExceptionHandler.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/controller/AuthController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/controller/AuthController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/controller/HomeController.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/controller/HomeController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/entity/AuthCenterRecord.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/entity/AuthCenterRecord.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/entity/HomePost.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/entity/HomePost.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/entity/HomeUserSummary.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/entity/HomeUserSummary.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/vo/HomePlazaVO$HomePostVO.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/vo/HomePlazaVO$HomePostVO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/vo/HomePlazaVO.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/domain/vo/HomePlazaVO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/mapper/AuthMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/mapper/AuthMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/mapper/HomePostMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/mapper/HomePostMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/AuthService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/AuthService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/HomeService.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/HomeService.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/impl/AuthCenterServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/impl/AuthCenterServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/impl/AuthServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/impl/AuthServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/impl/HomeServiceImpl.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/com/campusmate/service/impl/HomeServiceImpl.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/mapper/AuthCenterMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/mapper/AuthCenterMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/mapper/AuthMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/mapper/AuthMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/mapper/HomeConfigMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/mapper/HomeConfigMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/classes/mapper/HomePostMapper.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/mapper/HomePostMapper.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.AuthCenterServiceImplTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.AuthCenterServiceImplTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.AuthServiceImplTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.AuthServiceImplTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.HomeServiceImplTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.HomeServiceImplTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.ProfileServiceImplTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.ProfileServiceImplTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.AuthCenterServiceImplTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.AuthCenterServiceImplTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.AuthServiceImplTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.AuthServiceImplTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.HomeServiceImplTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.HomeServiceImplTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.ProfileServiceImplTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.ProfileServiceImplTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthCenterServiceImplTest$FakeAuthCenterMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthCenterServiceImplTest$FakeAuthCenterMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthCenterServiceImplTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthCenterServiceImplTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthServiceImplTest$FakeAuthMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthServiceImplTest$FakeAuthMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthServiceImplTest$FakeProfileMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthServiceImplTest$FakeProfileMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthServiceImplTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/AuthServiceImplTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/HomeServiceImplTest$CapturingHomePostMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/HomeServiceImplTest$CapturingHomePostMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/HomeServiceImplTest$FakeHomeConfigMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/HomeServiceImplTest$FakeHomeConfigMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/HomeServiceImplTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/HomeServiceImplTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/ProfileServiceImplTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/campusmate/service/ProfileServiceImplTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/init/001_init_homepage.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/schema/001_homepage.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/schema/002_auth.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/schema/003_profile_center.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/schema/004_auth_center.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/seed/001_homepage_seed.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/seed/002_auth_center_seed.sql" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-C5-1Jci6.css" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-D1tR-Acg.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/dist/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/auth.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/api/home.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/home.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/router/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/utils/currentUser.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/utils/currentUser.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/user/authCenter/AuthenticationView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/user/authCenter/AuthenticationView.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/user/home/HomeView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/user/home/HomeView.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/user/home/MatchPostDetailView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/user/home/MatchPostDetailView.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/views/user/profile/ProfileView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/user/profile/ProfileView.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/init-database.ps1" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/init-database.ps1" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -240,11 +160,32 @@
       <workItem from="1781749667724" duration="10569000" />
       <workItem from="1781828095795" duration="12060000" />
       <workItem from="1782020131033" duration="6249000" />
-      <workItem from="1782089706889" duration="2602000" />
+      <workItem from="1782089706889" duration="5148000" />
     </task>
+    <task id="LOCAL-00001" summary="1">
+      <option name="closed" value="true" />
+      <created>1782092652255</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1782092652255</updated>
+    </task>
+    <task id="LOCAL-00002" summary="1">
+      <option name="closed" value="true" />
+      <created>1782092670782</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1782092670782</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="1" />
+    <option name="LAST_COMMIT_MESSAGE" value="1" />
   </component>
 </project>
