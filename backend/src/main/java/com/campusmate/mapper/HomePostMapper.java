@@ -37,6 +37,8 @@ public interface HomePostMapper {
 
     int insertPost(HomePost post);
 
+    int updateMatchPost(HomePost post);
+
     int insertReply(HomePostReply reply);
 
     int insertReport(HomePostReport report);

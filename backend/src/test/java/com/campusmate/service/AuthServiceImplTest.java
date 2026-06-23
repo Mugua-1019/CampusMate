@@ -299,6 +299,11 @@ class AuthServiceImplTest {
         }
 
         @Override
+        public int updatePreferenceScore(Long userId, String label, int score) {
+            return 1;
+        }
+
+        @Override
         public ProfileVO.CampusVerifyVO selectCampusVerify(Long userId) {
             return null;
         }
@@ -336,6 +341,41 @@ class AuthServiceImplTest {
         @Override
         public List<ProfileVO.PostVO> selectPosts(Long userId) {
             return List.of();
+        }
+
+        @Override
+        public String selectLatestCampusVerifiedDate(Long userId) {
+            return null;
+        }
+
+        @Override
+        public int countApprovedMatches(Long userId) {
+            return 0;
+        }
+
+        @Override
+        public String selectLatestApprovedMatchDate(Long userId) {
+            return null;
+        }
+
+        @Override
+        public int countApprovedMatchesByCategory(Long userId, String categoryKeyword) {
+            return 0;
+        }
+
+        @Override
+        public String selectLatestApprovedMatchDateByCategory(Long userId, String categoryKeyword) {
+            return null;
+        }
+
+        @Override
+        public int countVisibleVentReplies(Long userId) {
+            return 0;
+        }
+
+        @Override
+        public String selectLatestVisibleVentReplyDate(Long userId) {
+            return null;
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.campusmate.service;
 
 import com.campusmate.domain.dto.ProfileUpdateRequest;
+import com.campusmate.domain.dto.ProfilePreferenceUpdateRequest;
 import com.campusmate.domain.entity.UserProfile;
 import com.campusmate.domain.vo.ProfileVO;
 import com.campusmate.mapper.ProfileMapper;
@@ -34,6 +35,8 @@ class ProfileServiceImplTest {
         assertEquals(List.of("无违规记录"), result.getSafety().getItems());
         assertEquals("Ada Chat", result.getChats().get(0).getName());
         assertEquals("Study post", result.getPosts().get(0).getTitle());
+        assertEquals(6, result.getAchievements().size());
+        assertTrue(result.getAchievements().get(0).isAchieved());
     }
 
     @Test
@@ -77,6 +80,25 @@ class ProfileServiceImplTest {
     }
 
     @Test
+    void updatePreferencesChangesScoresAndReturnsFreshProfile() {
+        FakeProfileMapper mapper = new FakeProfileMapper(profile());
+        ProfileService service = new ProfileServiceImpl(mapper);
+        String preferenceLabel = mapper.selectPreferences(1L).get(0).getLabel();
+        ProfilePreferenceUpdateRequest.Item item = new ProfilePreferenceUpdateRequest.Item();
+        item.setLabel(preferenceLabel);
+        item.setScore(4);
+        ProfilePreferenceUpdateRequest request = new ProfilePreferenceUpdateRequest();
+        request.setUserId(1L);
+        request.setPreferences(List.of(item));
+
+        ProfileVO result = service.updatePreferences(request);
+
+        assertEquals(4, mapper.updatedPreferenceScore);
+        assertEquals(preferenceLabel, mapper.updatedPreferenceLabel);
+        assertEquals(preferenceLabel, result.getPreferences().get(0).getLabel());
+    }
+
+    @Test
     void getProfileCreatesDefaultProfileWhenAccountExistsWithoutProfile() {
         FakeProfileMapper mapper = new FakeProfileMapper(null);
         mapper.account = "student@example.com";
@@ -111,6 +133,8 @@ class ProfileServiceImplTest {
         private UserProfile updatedProfile;
         private UserProfile insertedProfile;
         private String account;
+        private String updatedPreferenceLabel;
+        private int updatedPreferenceScore;
 
         private FakeProfileMapper(UserProfile profile) {
             this.profile = profile;
@@ -137,6 +161,13 @@ class ProfileServiceImplTest {
         public int updateDisplayProfile(UserProfile profile) {
             this.updatedProfile = profile;
             this.profile = profile;
+            return 1;
+        }
+
+        @Override
+        public int updatePreferenceScore(Long userId, String label, int score) {
+            this.updatedPreferenceLabel = label;
+            this.updatedPreferenceScore = score;
             return 1;
         }
 
@@ -199,6 +230,8 @@ class ProfileServiceImplTest {
             chat.setTime("10:24");
             chat.setUnread(1);
             chat.setTone("warm");
+            chat.setConversationId(7L);
+            chat.setPeerUserId(2L);
             return List.of(chat);
         }
 
@@ -214,7 +247,44 @@ class ProfileServiceImplTest {
             post.setTime("today");
             post.setMatched(3);
             post.setTone("study");
+            post.setPostId(8L);
+            post.setPlaza("match");
             return List.of(post);
+        }
+
+        @Override
+        public String selectLatestCampusVerifiedDate(Long userId) {
+            return "2024-05-01";
+        }
+
+        @Override
+        public int countApprovedMatches(Long userId) {
+            return 5;
+        }
+
+        @Override
+        public String selectLatestApprovedMatchDate(Long userId) {
+            return "2024-05-02";
+        }
+
+        @Override
+        public int countApprovedMatchesByCategory(Long userId, String categoryKeyword) {
+            return "学习".equals(categoryKeyword) ? 3 : 0;
+        }
+
+        @Override
+        public String selectLatestApprovedMatchDateByCategory(Long userId, String categoryKeyword) {
+            return "学习".equals(categoryKeyword) ? "2024-05-03" : null;
+        }
+
+        @Override
+        public int countVisibleVentReplies(Long userId) {
+            return 10;
+        }
+
+        @Override
+        public String selectLatestVisibleVentReplyDate(Long userId) {
+            return "2024-05-04";
         }
     }
 }

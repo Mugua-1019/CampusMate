@@ -212,6 +212,28 @@ class HomeServiceImplTest {
     }
 
     @Test
+    void createPostRejectsUnverifiedUserBeforeInsert() {
+        CapturingHomePostMapper postMapper = new CapturingHomePostMapper(List.of());
+        UserProfile profile = new UserProfile();
+        profile.setVerified(false);
+        profile.setVerifyStatus("pending");
+        postMapper.verifyProfile = profile;
+        HomeService service = new HomeServiceImpl(postMapper, new FakeHomeConfigMapper());
+        HomePostCreateRequest request = new HomePostCreateRequest();
+        request.setUserId(6L);
+        request.setPlaza("match");
+        request.setCategory("study");
+        request.setTitle("study partner");
+        request.setDescription("review together");
+
+        SecurityException exception = assertThrows(SecurityException.class,
+                () -> service.createPost(request));
+
+        assertEquals("请先完成校园认证后查看帖子", exception.getMessage());
+        assertEquals(null, postMapper.insertedPost);
+    }
+
+    @Test
     void submitVentPostComfortIncrementsCountAndCreatesOwnerNotification() {
         HomePost post = post(31L, "vent", "comfort-test", "matching", true, false, 4, 20);
         post.setPublisherUserId(22L);
@@ -458,6 +480,24 @@ class HomeServiceImplTest {
         public int insertPost(HomePost post) {
             post.setId(1L);
             this.insertedPost = post;
+            return 1;
+        }
+
+        @Override
+        public int updateMatchPost(HomePost post) {
+            HomePost current = selectVisibleMatchPostById(post.getId());
+            if (current == null || !post.getPublisherUserId().equals(current.getPublisherUserId())) {
+                return 0;
+            }
+            current.setCategory(post.getCategory());
+            current.setTitle(post.getTitle());
+            current.setTags(post.getTags());
+            current.setDescription(post.getDescription());
+            current.setExpectedTime(post.getExpectedTime());
+            current.setExpectedLocation(post.getExpectedLocation());
+            current.setAaFee(post.getAaFee());
+            current.setMaxCount(post.getMaxCount());
+            current.setAnonymous(post.getAnonymous());
             return 1;
         }
 

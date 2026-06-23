@@ -46,7 +46,7 @@
               or tags like concat('%', #{query.keyword}, '%')
           )
         </if>
-        order by sort_weight desc, id desc
+        order by created_at desc, id desc
         limit 20
     </select>
 
@@ -241,6 +241,26 @@
          #{anonymous}, #{verified}, #{currentCount}, #{maxCount}, #{currentState}, #{hopeYouCan}, #{preferredWay},
          #{gentleReplies}, 'visible', 100, 0)
     </insert>
+
+    <update id="updateMatchPost" parameterType="com.campusmate.domain.entity.HomePost">
+        update home_post
+        set
+            category = #{category},
+            title = #{title},
+            tags = #{tags},
+            description = #{description},
+            expected_time = #{expectedTime},
+            expected_location = #{expectedLocation},
+            aa_fee = #{aaFee},
+            max_count = #{maxCount},
+            anonymous = #{anonymous},
+            updated_at = now()
+        where id = #{id}
+          and publisher_user_id = #{publisherUserId}
+          and plaza = 'match'
+          and deleted = 0
+          and review_status = 'visible'
+    </update>
 
     <insert id="insertReply" parameterType="com.campusmate.domain.entity.HomePostReply" useGeneratedKeys="true" keyProperty="id">
         insert into home_post_reply

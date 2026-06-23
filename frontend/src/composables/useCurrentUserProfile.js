@@ -1,6 +1,6 @@
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { fetchProfile } from '../api/profile'
-import { getCurrentUser, isAuthenticatedUser } from '../utils/currentUser'
+import { CURRENT_USER_CHANGED_EVENT, getCurrentUser, isAuthenticatedUser } from '../utils/currentUser'
 
 export const useCurrentUserProfile = () => {
   const currentUser = ref(getCurrentUser())
@@ -33,6 +33,22 @@ export const useCurrentUserProfile = () => {
       loading.value = false
     }
   }
+
+  const syncCurrentUser = () => {
+    currentUser.value = getCurrentUser()
+    if (!isLoggedIn.value) {
+      profile.value = null
+      error.value = null
+    }
+  }
+
+  onMounted(() => {
+    window.addEventListener(CURRENT_USER_CHANGED_EVENT, syncCurrentUser)
+  })
+
+  onBeforeUnmount(() => {
+    window.removeEventListener(CURRENT_USER_CHANGED_EVENT, syncCurrentUser)
+  })
 
   return {
     currentUser,

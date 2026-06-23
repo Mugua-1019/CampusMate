@@ -24,6 +24,7 @@ public class ProfileVO {
     private SafetyVO safety;
     private List<ChatVO> chats;
     private List<PostVO> posts;
+    private List<AchievementVO> achievements;
 
     public Long getUserId() {
         return userId;
@@ -183,6 +184,14 @@ public class ProfileVO {
 
     public void setPosts(List<PostVO> posts) {
         this.posts = posts;
+    }
+
+    public List<AchievementVO> getAchievements() {
+        return achievements;
+    }
+
+    public void setAchievements(List<AchievementVO> achievements) {
+        this.achievements = achievements;
     }
 
     public static class CampusVerifyVO {
@@ -345,6 +354,8 @@ public class ProfileVO {
     }
 
     public static class ChatVO {
+        private Long conversationId;
+        private Long peerUserId;
         private String avatar;
         private String name;
         private String tag;
@@ -352,6 +363,22 @@ public class ProfileVO {
         private String time;
         private Integer unread;
         private String tone;
+
+        public Long getConversationId() {
+            return conversationId;
+        }
+
+        public void setConversationId(Long conversationId) {
+            this.conversationId = conversationId;
+        }
+
+        public Long getPeerUserId() {
+            return peerUserId;
+        }
+
+        public void setPeerUserId(Long peerUserId) {
+            this.peerUserId = peerUserId;
+        }
 
         public String getAvatar() {
             return avatar;
@@ -411,6 +438,8 @@ public class ProfileVO {
     }
 
     public static class PostVO {
+        private Long postId;
+        private String plaza;
         private String shortLabel;
         private String title;
         private String tag;
@@ -420,6 +449,22 @@ public class ProfileVO {
         private String time;
         private int matched;
         private String tone;
+
+        public Long getPostId() {
+            return postId;
+        }
+
+        public void setPostId(Long postId) {
+            this.postId = postId;
+        }
+
+        public String getPlaza() {
+            return plaza;
+        }
+
+        public void setPlaza(String plaza) {
+            this.plaza = plaza;
+        }
 
         public String getShortLabel() {
             return shortLabel;
@@ -483,6 +528,63 @@ public class ProfileVO {
 
         public void setMatched(int matched) {
             this.matched = matched;
+        }
+
+        public String getTone() {
+            return tone;
+        }
+
+        public void setTone(String tone) {
+            this.tone = tone;
+        }
+    }
+
+    public static class AchievementVO {
+        private String key;
+        private String title;
+        private String condition;
+        private boolean achieved;
+        private String achievedAt;
+        private String tone;
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getCondition() {
+            return condition;
+        }
+
+        public void setCondition(String condition) {
+            this.condition = condition;
+        }
+
+        public boolean isAchieved() {
+            return achieved;
+        }
+
+        public void setAchieved(boolean achieved) {
+            this.achieved = achieved;
+        }
+
+        public String getAchievedAt() {
+            return achievedAt;
+        }
+
+        public void setAchievedAt(String achievedAt) {
+            this.achievedAt = achievedAt;
         }
 
         public String getTone() {

@@ -10,6 +10,10 @@ import LoginView from '../views/user/login/LoginView.vue'
 import ProfileView from '../views/user/profile/ProfileView.vue'
 import AuthenticationView from '../views/user/authCenter/AuthenticationView.vue'
 import { getCurrentUser, isAuthenticatedUser } from '../utils/currentUser'
+import { fetchProfile } from '../api/profile'
+
+const UNVERIFIED_ALLOWED_ROUTE_NAMES = new Set(['home', 'authCenter', 'profile'])
+const APPROVED_VERIFY_STATUSES = new Set(['approved', 'passed'])
 
 const routes = [
   {
@@ -81,9 +85,26 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to) => {
-  if ((to.name === 'profile' || to.name === 'authCenter') && !isAuthenticatedUser(getCurrentUser())) {
+router.beforeEach(async (to) => {
+  const currentUser = getCurrentUser()
+  if ((to.name === 'profile' || to.name === 'authCenter') && !isAuthenticatedUser(currentUser)) {
     return { name: 'login' }
+  }
+  if (!isAuthenticatedUser(currentUser) || UNVERIFIED_ALLOWED_ROUTE_NAMES.has(to.name)) {
+    return undefined
+  }
+
+  try {
+    const { data } = await fetchProfile(currentUser.userId)
+    const profile = data.data || {}
+    if (!profile.verified || !APPROVED_VERIFY_STATUSES.has(profile.verifyStatus)) {
+      return {
+        name: 'authCenter',
+        query: { redirect: to.fullPath }
+      }
+    }
+  } catch (error) {
+    return { name: 'authCenter' }
   }
 })
 

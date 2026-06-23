@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -64,6 +65,18 @@ public class HomeController {
             request.setUserId(currentUserId);
         }
         return Result.ok(homeService.createPost(request));
+    }
+
+    @PutMapping("/match-posts/{id}")
+    public Result<HomePlazaVO.HomePostVO> updateMatchPost(
+            @PathVariable Long id,
+            @RequestBody HomePostCreateRequest request,
+            @RequestHeader(value = "X-CampusMate-User-Id", required = false) Long currentUserId
+    ) {
+        if (request != null && currentUserId != null) {
+            request.setUserId(currentUserId);
+        }
+        return Result.ok(homeService.updatePost(id, request));
     }
 
     @PostMapping("/vent-posts/{id}/comforts")

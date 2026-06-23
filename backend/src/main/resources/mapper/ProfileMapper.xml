@@ -52,6 +52,13 @@
         where user_id = #{userId}
     </update>
 
+    <update id="updatePreferenceScore">
+        update profile_preference
+        set score = #{score}
+        where user_id = #{userId}
+          and label = #{label}
+    </update>
+
     <select id="selectCampusVerify" resultType="com.campusmate.domain.vo.ProfileVO$CampusVerifyVO">
         select
             title,
@@ -110,31 +117,133 @@
 
     <select id="selectChats" resultType="com.campusmate.domain.vo.ProfileVO$ChatVO">
         select
-            avatar_text as avatar,
-            display_name as name,
-            tag,
-            message,
-            display_time as time,
-            unread_count as unread,
-            tone
-        from profile_recent_chat
-        where user_id = #{userId}
-        order by sort_weight, id
+            c.conversation_id,
+            case when c.starter_user_id = #{userId} then c.target_user_id else c.starter_user_id end as peer_user_id,
+            left(coalesce(nullif(p.nickname, ''), '同'), 1) as avatar,
+            coalesce(nullif(p.nickname, ''), '未命名用户') as name,
+            coalesce(nullif(c.source_type, ''), '校园伙伴') as tag,
+            coalesce(nullif(c.last_message, ''), '还没有聊天记录') as message,
+            case
+                when date(c.last_message_at) = curdate() then date_format(c.last_message_at, '%H:%i')
+                when date(c.last_message_at) = date_sub(curdate(), interval 1 day) then '昨天'
+                else date_format(c.last_message_at, '%m-%d')
+            end as time,
+            m.unread_count as unread,
+            case mod(c.conversation_id, 3) when 0 then 'warm' when 1 then 'pink' else 'green' end as tone
+        from chat_conversation_member m
+        join chat_conversation c on c.conversation_id = m.conversation_id
+        join user_profile p on p.user_id = case when c.starter_user_id = #{userId} then c.target_user_id else c.starter_user_id end
+        where m.user_id = #{userId}
+          and m.archived = 0
+        order by c.last_message_at desc, c.conversation_id desc
+        limit 3
     </select>
 
     <select id="selectPosts" resultType="com.campusmate.domain.vo.ProfileVO$PostVO">
         select
-            short_label,
+            id as post_id,
+            plaza,
+            left(coalesce(nullif(category, ''), title), 1) as short_label,
             title,
-            tag,
-            period,
+            coalesce(nullif(category, ''), case when plaza = 'vent' then '倾诉' else '匹配' end) as tag,
+            case when plaza = 'vent' then '倾诉广场' else '匹配广场' end as period,
             description,
-            location,
-            display_time as time,
-            matched_count as matched,
-            tone
-        from profile_publish
+            coalesce(nullif(expected_location, ''), '线上沟通') as location,
+            case
+                when date(created_at) = curdate() then date_format(created_at, '%H:%i')
+                when date(created_at) = date_sub(curdate(), interval 1 day) then '昨天'
+                else date_format(created_at, '%m-%d')
+            end as time,
+            current_count as matched,
+            case when plaza = 'vent' then 'sport' else 'study' end as tone
+        from home_post
+        where publisher_user_id = #{userId}
+          and deleted = 0
+          and review_status = 'visible'
+        order by created_at desc, id desc
+        limit 2
+    </select>
+
+    <select id="selectLatestCampusVerifiedDate" resultType="java.lang.String">
+        select date_format(coalesce(reviewed_at, submitted_at), '%Y-%m-%d')
+        from auth_center_record
         where user_id = #{userId}
-        order by sort_weight, id
+          and auth_type = 'campus'
+          and verified = 1
+          and status in ('approved', 'passed')
+        order by coalesce(reviewed_at, submitted_at) desc, record_id desc
+        limit 1
+    </select>
+
+    <select id="countApprovedMatches" resultType="int">
+        select count(1)
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        where r.status = 'approved'
+          and p.deleted = 0
+          and p.review_status = 'visible'
+          and (r.requester_user_id = #{userId} or p.publisher_user_id = #{userId})
+    </select>
+
+    <select id="selectLatestApprovedMatchDate" resultType="java.lang.String">
+        select date_format(r.updated_at, '%Y-%m-%d')
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        where r.status = 'approved'
+          and p.deleted = 0
+          and p.review_status = 'visible'
+          and (r.requester_user_id = #{userId} or p.publisher_user_id = #{userId})
+        order by r.updated_at desc, r.request_id desc
+        limit 1
+    </select>
+
+    <select id="countApprovedMatchesByCategory" resultType="int">
+        select count(1)
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        where r.status = 'approved'
+          and p.deleted = 0
+          and p.review_status = 'visible'
+          and p.category like concat('%', #{categoryKeyword}, '%')
+          and (r.requester_user_id = #{userId} or p.publisher_user_id = #{userId})
+    </select>
+
+    <select id="selectLatestApprovedMatchDateByCategory" resultType="java.lang.String">
+        select date_format(r.updated_at, '%Y-%m-%d')
+        from home_match_request r
+        join home_post p on p.id = r.post_id
+        where r.status = 'approved'
+          and p.deleted = 0
+          and p.review_status = 'visible'
+          and p.category like concat('%', #{categoryKeyword}, '%')
+          and (r.requester_user_id = #{userId} or p.publisher_user_id = #{userId})
+        order by r.updated_at desc, r.request_id desc
+        limit 1
+    </select>
+
+    <select id="countVisibleVentReplies" resultType="int">
+        select count(1)
+        from home_post_reply r
+        join home_post p on p.id = r.post_id
+        where r.user_id = #{userId}
+          and r.deleted = 0
+          and r.review_status = 'visible'
+          and p.plaza = 'vent'
+          and p.deleted = 0
+          and p.review_status = 'visible'
+    </select>
+
+    <select id="selectLatestVisibleVentReplyDate" resultType="java.lang.String">
+        select date_format(r.created_at, '%Y-%m-%d')
+        from home_post_reply r
+        join home_post p on p.id = r.post_id
+        where r.user_id = #{userId}
+          and r.deleted = 0
+          and r.review_status = 'visible'
+          and p.plaza = 'vent'
+          and p.deleted = 0
+          and p.review_status = 'visible'
+        order by r.created_at desc, r.id desc
+        limit 1
     </select>
 </mapper>

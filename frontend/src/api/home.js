@@ -16,6 +16,10 @@ export const createHomePost = (data) => {
   return axios.post('/api/home/posts', data)
 }
 
+export const updateHomePost = (id, data) => {
+  return axios.put(`/api/home/match-posts/${id}`, data)
+}
+
 export const submitVentPostComfort = (id) => {
   return axios.post(`/api/home/vent-posts/${id}/comforts`)
 }

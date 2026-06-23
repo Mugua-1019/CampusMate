@@ -125,15 +125,16 @@
         <section class="side-card preference-card">
           <div class="side-title">
             <h2>我的匹配偏好</h2>
-            <button>编辑</button>
+            <button @click="openPreferenceEditor">编辑</button>
           </div>
           <div class="preference-list">
-            <p><StarFilled /> <strong>匹配类型</strong><span>学习搭子、运动搭子、饭搭子、情感陪伴</span></p>
-            <p><UserFilled /> <strong>可见范围</strong><span>仅校内认证用户可见</span></p>
-            <p><Clock /> <strong>活跃时间</strong><span>工作日晚上、周末全天</span></p>
-            <p><StarFilled /> <strong>偏好标签</strong><span>自律 真诚 有耐心 友善 积极</span></p>
+            <p v-for="item in displayMatchPreferences" :key="item.label">
+              <component :is="item.icon" />
+              <strong>{{ item.label }}</strong>
+              <span>{{ item.value }}</span>
+            </p>
           </div>
-          <button class="link-button">查看全部偏好 <ArrowRight /></button>
+          <button class="link-button" @click="openPreferenceEditor">查看全部偏好 <ArrowRight /></button>
         </section>
 
         <section class="side-card safety-card">
@@ -166,11 +167,53 @@
         </section>
       </aside>
     </section>
+
+    <el-dialog v-model="preferenceEditVisible" title="编辑匹配偏好" width="620px">
+      <el-form class="preference-form" label-width="86px">
+        <el-form-item label="匹配类型">
+          <el-checkbox-group v-model="preferenceDraft.types">
+            <el-checkbox-button v-for="type in matchTypeOptions" :key="type" :label="type" />
+          </el-checkbox-group>
+        </el-form-item>
+        <el-form-item label="可见范围">
+          <el-radio-group v-model="preferenceDraft.visibility">
+            <el-radio-button v-for="item in visibilityOptions" :key="item" :label="item" />
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="活跃时间">
+          <el-select v-model="preferenceDraft.activeTimes" multiple collapse-tags collapse-tags-tooltip>
+            <el-option v-for="time in activeTimeOptions" :key="time" :label="time" :value="time" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="偏好标签">
+          <div class="tag-editor">
+            <div class="tag-list">
+              <el-tag
+                v-for="tag in preferenceDraft.tags"
+                :key="tag"
+                closable
+                @close="removePreferenceTag(tag)"
+              >
+                {{ tag }}
+              </el-tag>
+            </div>
+            <div class="tag-input-row">
+              <el-input v-model="preferenceTagInput" maxlength="12" @keyup.enter="addPreferenceTag" />
+              <button type="button" class="dialog-save small" @click="addPreferenceTag">添加</button>
+            </div>
+          </div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <button class="dialog-cancel" @click="preferenceEditVisible = false">取消</button>
+        <button class="dialog-save" @click="savePreferenceEdit">保存偏好</button>
+      </template>
+    </el-dialog>
   </main>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
@@ -203,6 +246,14 @@ const keyword = ref('')
 const startedFilter = ref('all')
 const currentUser = ref(getCurrentUser())
 const openMenuId = ref(null)
+const preferenceEditVisible = ref(false)
+const preferenceTagInput = ref('')
+const preferenceDraft = reactive({
+  types: [],
+  visibility: '',
+  activeTimes: [],
+  tags: []
+})
 const userSummary = ref({
   verified: true,
   nickname: currentUser.value?.nickname || '小星同学',
@@ -243,6 +294,23 @@ const avatarPool = [
 ]
 
 const metricIcons = [StarFilled, Connection, Select, StarFilled, ChatDotRound]
+const matchPreferenceStorageKey = computed(() => `campusmate-match-preference-${currentUser.value?.userId || 'guest'}`)
+const matchTypeOptions = ['学习搭子', '饭搭子', '运动搭子', '比赛组队', '活动同行', '闲聊陪伴']
+const visibilityOptions = ['仅校内认证用户可见', '仅同学院可见', '所有同学可见']
+const activeTimeOptions = ['工作日早上', '工作日中午', '工作日晚上', '周末白天', '周末晚上', '随时可约']
+const defaultMatchPreference = {
+  types: ['学习搭子', '运动搭子', '饭搭子', '闲聊陪伴'],
+  visibility: '仅校内认证用户可见',
+  activeTimes: ['工作日晚上', '周末白天'],
+  tags: ['自律', '真诚', '有耐心', '友善', '积极']
+}
+const matchPreference = ref({ ...defaultMatchPreference })
+const displayMatchPreferences = computed(() => [
+  { label: '匹配类型', value: joinPreference(matchPreference.value.types), icon: StarFilled },
+  { label: '可见范围', value: matchPreference.value.visibility || '未设置', icon: UserFilled },
+  { label: '活跃时间', value: joinPreference(matchPreference.value.activeTimes), icon: Clock },
+  { label: '偏好标签', value: joinPreference(matchPreference.value.tags), icon: StarFilled }
+])
 const metrics = ref([
   { label: '总匹配数', value: 12, note: '较上周 +3', icon: StarFilled, tone: 'pink' },
   { label: '待我处理', value: 4, note: '有新请求待同意', icon: Connection, tone: 'purple' },
@@ -474,6 +542,59 @@ const editPost = (post) => {
   })
 }
 
+const joinPreference = (items) => {
+  return Array.isArray(items) && items.length ? items.join('、') : '未设置'
+}
+
+const normalizePreference = (preference) => ({
+  types: Array.isArray(preference?.types) ? preference.types.filter(Boolean).slice(0, 8) : [...defaultMatchPreference.types],
+  visibility: visibilityOptions.includes(preference?.visibility) ? preference.visibility : defaultMatchPreference.visibility,
+  activeTimes: Array.isArray(preference?.activeTimes)
+    ? preference.activeTimes.filter((item) => activeTimeOptions.includes(item))
+    : [...defaultMatchPreference.activeTimes],
+  tags: Array.isArray(preference?.tags)
+    ? [...new Set(preference.tags.map((tag) => String(tag).trim()).filter(Boolean))].slice(0, 12)
+    : [...defaultMatchPreference.tags]
+})
+
+const loadMatchPreference = () => {
+  try {
+    const saved = window.localStorage.getItem(matchPreferenceStorageKey.value)
+    matchPreference.value = normalizePreference(saved ? JSON.parse(saved) : defaultMatchPreference)
+  } catch (error) {
+    matchPreference.value = { ...defaultMatchPreference }
+  }
+}
+
+const openPreferenceEditor = () => {
+  preferenceDraft.types = [...matchPreference.value.types]
+  preferenceDraft.visibility = matchPreference.value.visibility
+  preferenceDraft.activeTimes = [...matchPreference.value.activeTimes]
+  preferenceDraft.tags = [...matchPreference.value.tags]
+  preferenceTagInput.value = ''
+  preferenceEditVisible.value = true
+}
+
+const addPreferenceTag = () => {
+  const tag = preferenceTagInput.value.trim()
+  if (!tag) return
+  if (!preferenceDraft.tags.includes(tag)) {
+    preferenceDraft.tags.push(tag)
+  }
+  preferenceTagInput.value = ''
+}
+
+const removePreferenceTag = (tag) => {
+  preferenceDraft.tags = preferenceDraft.tags.filter((item) => item !== tag)
+}
+
+const savePreferenceEdit = () => {
+  matchPreference.value = normalizePreference(preferenceDraft)
+  window.localStorage.setItem(matchPreferenceStorageKey.value, JSON.stringify(matchPreference.value))
+  preferenceEditVisible.value = false
+  ElMessage.success('匹配偏好已更新')
+}
+
 const chatWith = (post) => {
   openMenuId.value = null
   if (!post?.peerUserId) {
@@ -537,7 +658,10 @@ const loadMyMatches = async () => {
   }
 }
 
-onMounted(loadMyMatches)
+onMounted(() => {
+  loadMatchPreference()
+  loadMyMatches()
+})
 </script>
 
 <style scoped>
@@ -1290,6 +1414,54 @@ onMounted(loadMyMatches)
   color: #897ff0;
   font-size: 12px;
   font-weight: 800;
+}
+
+.preference-form :deep(.el-select) {
+  width: 100%;
+}
+
+.tag-editor {
+  display: grid;
+  width: 100%;
+  gap: 10px;
+}
+
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.tag-input-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.dialog-cancel,
+.dialog-save {
+  min-width: 82px;
+  height: 34px;
+  margin-left: 10px;
+  border-radius: 999px;
+  font-weight: 900;
+}
+
+.dialog-cancel {
+  color: #626681;
+  border: 1px solid #dedced;
+  background: #fff;
+}
+
+.dialog-save {
+  color: #fff;
+  background: linear-gradient(135deg, #7460f4, #9d7bff);
+}
+
+.dialog-save.small {
+  min-width: 64px;
+  margin-left: 0;
 }
 
 @media (max-width: 1320px) {

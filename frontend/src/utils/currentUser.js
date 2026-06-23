@@ -1,4 +1,9 @@
 const USER_STORAGE_KEY = 'campusmate_user'
+export const CURRENT_USER_CHANGED_EVENT = 'campusmate:current-user-changed'
+
+const notifyCurrentUserChanged = (user) => {
+  window.dispatchEvent(new CustomEvent(CURRENT_USER_CHANGED_EVENT, { detail: user }))
+}
 
 const toLoginIdentity = (user) => {
   if (!user?.userId) {
@@ -37,8 +42,10 @@ export const saveCurrentUser = (user) => {
     return
   }
   localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(identity))
+  notifyCurrentUserChanged(identity)
 }
 
 export const clearCurrentUser = () => {
   localStorage.removeItem(USER_STORAGE_KEY)
+  notifyCurrentUserChanged(null)
 }

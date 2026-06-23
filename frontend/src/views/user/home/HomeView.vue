@@ -135,7 +135,6 @@
         <section class="side-card status-card">
           <div class="side-title">
             <h2>我的星伴状态</h2>
-            <button>编辑</button>
           </div>
           <div class="status-body">
             <img v-if="userAvatar" class="status-placeholder" :src="userAvatar" alt="头像" />
@@ -157,22 +156,15 @@
         <section class="side-card confirm-card">
           <div class="side-title">
             <h2>待确认见面信息</h2>
-            <em>{{ userSummary.pendingMeet?.title ? 1 : 0 }}</em>
+            <em>{{ pendingMeetCount }}</em>
           </div>
-          <div class="confirm-user">
-            <span>{{ userSummary.pendingMeet?.partner?.slice(0, 1) || '星' }}</span>
-            <div>
-              <strong>{{ userSummary.pendingMeet?.title || '暂无待确认事项' }}</strong>
-              <p v-if="userSummary.pendingMeet?.partner">
-                {{ userSummary.pendingMeet.partner }} 邀请你确认 {{ userSummary.pendingMeet.category }}
-              </p>
-              <small v-if="userSummary.pendingMeet?.time">时间：{{ userSummary.pendingMeet.time }}</small>
-              <small v-if="userSummary.pendingMeet?.location">地点：{{ userSummary.pendingMeet.location }}</small>
-            </div>
+          <div class="confirm-summary">
+            <strong>你当前有 {{ pendingMeetCount }} 条信息待处理</strong>
+            <p v-if="pendingMeetCount > 0">进入“我的匹配”查看请求、确认见面信息或继续沟通。</p>
+            <p v-else>暂无需要处理的信息，有新的匹配请求会显示在这里。</p>
           </div>
           <div class="confirm-actions">
-            <button class="btn-primary">同意匹配</button>
-            <button class="btn-secondary">再聊一聊</button>
+            <button class="btn-primary" @click="goPendingMeet">查看并处理</button>
           </div>
         </section>
 
@@ -217,7 +209,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
@@ -241,7 +233,7 @@ import logoImage from '../../../assets/images/logo-star-mascot.png'
 import verifyImage from '../../../assets/images/renzheng.png'
 import bannerImage from '../../../assets/images/guanggaotiao.png'
 import { fetchHomePlaza } from '../../../api/home'
-import { getCurrentUser, isAuthenticatedUser } from '../../../utils/currentUser'
+import { CURRENT_USER_CHANGED_EVENT, getCurrentUser, isAuthenticatedUser } from '../../../utils/currentUser'
 import NotificationBell from '../../../components/NotificationBell.vue'
 import UserMenu from '../../../components/UserMenu.vue'
 
@@ -299,6 +291,10 @@ const activeCategories = computed(() => activeTab.value.categories || ['全部']
 const isLoggedIn = computed(() => isAuthenticatedUser(currentUser.value))
 const userInitial = computed(() => (userSummary.value.nickname || '星').slice(0, 1))
 const userAvatar = computed(() => userSummary.value.avatarUrl || currentUser.value?.avatarUrl || '')
+const pendingMeetCount = computed(() => {
+  const pendingMeet = userSummary.value.pendingMeet || {}
+  return Number(pendingMeet.count ?? pendingMeet.pendingCount ?? (pendingMeet.title ? 1 : 0))
+})
 
 const isFull = (post) => post.full || post.currentCount >= post.maxCount || post.status === 'full'
 
@@ -313,10 +309,15 @@ const handleChat = (post) => {
     showVerifyTip.value = true
     return
   }
+  const peerUserId = post.publisherUserId || post.publisherId || post.userId
+  if (!peerUserId) {
+    ElMessage.error('缺少发布者信息，暂时无法打开聊天')
+    return
+  }
   router.push({
     path: '/chat',
     query: {
-      userId: post.publisherUserId || post.publisherId || post.userId,
+      userId: peerUserId,
       name: post.publisherName,
       badge: post.category,
       source: post.title
@@ -373,6 +374,17 @@ const goSafetyFeedback = () => {
   router.push('/safety-feedback')
 }
 
+const goPendingMeet = () => {
+  if (!isLoggedIn.value) {
+    goLogin()
+    return
+  }
+  router.push({
+    path: '/my-match',
+    query: { pending: '1' }
+  })
+}
+
 const handleNav = (item) => {
   if (item.route) {
     if ((item.route === '/profile' || item.route === '/auth-center') && !isLoggedIn.value) {
@@ -419,7 +431,20 @@ watch([activePlaza, selectedCategory, keyword], () => {
   searchTimer = window.setTimeout(loadHomePlaza, 180)
 })
 
-onMounted(loadHomePlaza)
+const handleCurrentUserChanged = () => {
+  currentUser.value = getCurrentUser()
+  loadHomePlaza()
+}
+
+onMounted(() => {
+  window.addEventListener(CURRENT_USER_CHANGED_EVENT, handleCurrentUserChanged)
+  loadHomePlaza()
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener(CURRENT_USER_CHANGED_EVENT, handleCurrentUserChanged)
+  window.clearTimeout(searchTimer)
+})
 </script>
 
 <style scoped>
@@ -1186,6 +1211,26 @@ onMounted(loadHomePlaza)
   grid-template-columns: 48px 1fr;
   gap: 12px;
   margin-bottom: 16px;
+}
+
+.confirm-summary {
+  margin-bottom: 16px;
+  padding: 14px;
+  border: 1px solid #eee7ff;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff, #f7f2ff);
+}
+
+.confirm-summary strong {
+  color: #20233f;
+  font-size: 15px;
+}
+
+.confirm-summary p {
+  margin: 8px 0 0;
+  color: #77798d;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
 .confirm-user > span {

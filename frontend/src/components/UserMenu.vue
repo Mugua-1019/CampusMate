@@ -95,7 +95,7 @@ const openPasswordDialog = () => {
 const logout = () => {
   clearCurrentUser()
   menuOpen.value = false
-  router.push('/home')
+  router.replace('/home')
 }
 
 const sendCode = async () => {
@@ -142,7 +142,7 @@ const submitPassword = async () => {
     ElMessage.success('密码已修改，请重新登录')
     clearCurrentUser()
     passwordVisible.value = false
-    router.push('/login')
+    router.replace('/login')
   } catch (error) {
     ElMessage.error(error.response?.data?.message || '密码修改失败')
   } finally {

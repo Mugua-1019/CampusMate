@@ -18,6 +18,10 @@ public interface ProfileMapper {
 
     int updateDisplayProfile(UserProfile profile);
 
+    int updatePreferenceScore(@Param("userId") Long userId,
+                              @Param("label") String label,
+                              @Param("score") int score);
+
     ProfileVO.CampusVerifyVO selectCampusVerify(@Param("userId") Long userId);
 
     List<ProfileVO.PreferenceVO> selectPreferences(@Param("userId") Long userId);
@@ -33,4 +37,18 @@ public interface ProfileMapper {
     List<ProfileVO.ChatVO> selectChats(@Param("userId") Long userId);
 
     List<ProfileVO.PostVO> selectPosts(@Param("userId") Long userId);
+
+    String selectLatestCampusVerifiedDate(@Param("userId") Long userId);
+
+    int countApprovedMatches(@Param("userId") Long userId);
+
+    String selectLatestApprovedMatchDate(@Param("userId") Long userId);
+
+    int countApprovedMatchesByCategory(@Param("userId") Long userId, @Param("categoryKeyword") String categoryKeyword);
+
+    String selectLatestApprovedMatchDateByCategory(@Param("userId") Long userId, @Param("categoryKeyword") String categoryKeyword);
+
+    int countVisibleVentReplies(@Param("userId") Long userId);
+
+    String selectLatestVisibleVentReplyDate(@Param("userId") Long userId);
 }

@@ -756,7 +756,7 @@ sys|schema||mysql.sys|localhost|TRIGGER|G</Grants>
     <schema id="226" parent="1" name="campusmate">
       <AutoIntrospectionLevel>3</AutoIntrospectionLevel>
       <LastIntrospectionLevel>3</LastIntrospectionLevel>
-      <LastIntrospectionLocalTimestamp>2026-06-22.12:27:33</LastIntrospectionLocalTimestamp>
+      <LastIntrospectionLocalTimestamp>2026-06-23.07:23:49</LastIntrospectionLocalTimestamp>
       <CollationName>utf8mb4_unicode_ci</CollationName>
     </schema>
     <schema id="227" parent="1" name="db_selection">

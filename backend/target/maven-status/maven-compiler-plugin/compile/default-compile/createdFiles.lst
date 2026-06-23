@@ -6,6 +6,7 @@ com\campusmate\CampusMateApplication.class
 com\campusmate\domain\vo\HomePlazaVO.class
 com\campusmate\domain\dto\AuthLoginRequest.class
 com\campusmate\domain\vo\HomeMatchVO$RecentMatchVO.class
+com\campusmate\domain\dto\ProfilePreferenceUpdateRequest$Item.class
 com\campusmate\domain\dto\ChatArchiveRequest.class
 com\campusmate\domain\vo\HomeMatchVO.class
 com\campusmate\domain\entity\HomePlazaCategory.class
@@ -57,6 +58,7 @@ com\campusmate\domain\entity\ChatMessage.class
 com\campusmate\domain\entity\UserProfile.class
 com\campusmate\domain\entity\HomeNotification.class
 com\campusmate\service\impl\AuthServiceImpl.class
+com\campusmate\domain\vo\ProfileVO$AchievementVO.class
 com\campusmate\config\WebSocketConfig.class
 com\campusmate\config\StaticResourceConfig.class
 com\campusmate\controller\AuthController.class
@@ -69,6 +71,7 @@ com\campusmate\controller\ProfileController.class
 com\campusmate\controller\ChatController.class
 com\campusmate\domain\dto\AuthChangePasswordRequest.class
 com\campusmate\domain\dto\AuthCenterCampusSubmitRequest.class
+com\campusmate\domain\dto\ProfilePreferenceUpdateRequest.class
 com\campusmate\domain\dto\HomePostCreateRequest.class
 com\campusmate\domain\vo\ProfileVO$ActivityVO.class
 com\campusmate\service\impl\HomeServiceImpl.class

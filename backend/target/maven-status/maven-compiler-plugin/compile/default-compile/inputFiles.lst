@@ -21,6 +21,7 @@ C:\Users\15982\Desktop\CampusMate\backend\src\main\java\com\campusmate\domain\dt
 C:\Users\15982\Desktop\CampusMate\backend\src\main\java\com\campusmate\domain\dto\HomePostCreateRequest.java
 C:\Users\15982\Desktop\CampusMate\backend\src\main\java\com\campusmate\domain\dto\HomePostReplyRequest.java
 C:\Users\15982\Desktop\CampusMate\backend\src\main\java\com\campusmate\domain\dto\HomePostReportRequest.java
+C:\Users\15982\Desktop\CampusMate\backend\src\main\java\com\campusmate\domain\dto\ProfilePreferenceUpdateRequest.java
 C:\Users\15982\Desktop\CampusMate\backend\src\main\java\com\campusmate\domain\dto\ProfileUpdateRequest.java
 C:\Users\15982\Desktop\CampusMate\backend\src\main\java\com\campusmate\domain\entity\AuthCenterPhoneCode.java
 C:\Users\15982\Desktop\CampusMate\backend\src\main\java\com\campusmate\domain\entity\AuthCenterRecord.java

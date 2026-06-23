@@ -1,6 +1,7 @@
 package com.campusmate.controller;
 
 import com.campusmate.common.result.Result;
+import com.campusmate.domain.dto.ProfilePreferenceUpdateRequest;
 import com.campusmate.domain.dto.ProfileUpdateRequest;
 import com.campusmate.domain.vo.ProfileVO;
 import com.campusmate.service.ProfileService;
@@ -44,6 +45,11 @@ public class ProfileController {
     @PutMapping
     public Result<ProfileVO> updateProfile(@RequestBody ProfileUpdateRequest request) {
         return Result.ok(profileService.updateProfile(request));
+    }
+
+    @PutMapping("/preferences")
+    public Result<ProfileVO> updatePreferences(@RequestBody ProfilePreferenceUpdateRequest request) {
+        return Result.ok(profileService.updatePreferences(request));
     }
 
     @PostMapping("/avatar")

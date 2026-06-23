@@ -53,6 +53,11 @@
           </div>
         </header>
 
+        <section v-if="reportHint" class="report-context">
+          <strong>{{ reportHint.title }}</strong>
+          <p>{{ reportHint.detail }}</p>
+        </section>
+
         <section class="safety-image-wrap" aria-label="安全反馈">
           <img :src="safetyImage" alt="安全反馈" />
         </section>
@@ -63,7 +68,7 @@
 
 <script setup>
 import { computed, onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { Flag, HomeFilled, Lock, Message, Promotion, Search, StarFilled, User } from '@element-plus/icons-vue'
 import logoImage from '../../../assets/images/logo-star-mascot.png'
 import verifyImage from '../../../assets/images/renzheng.png'
@@ -74,6 +79,7 @@ import { fetchHomePlaza } from '../../../api/home'
 import { getCurrentUser, isAuthenticatedUser } from '../../../utils/currentUser'
 
 const router = useRouter()
+const route = useRoute()
 const keyword = ref('')
 const currentUser = ref(getCurrentUser())
 const userSummary = ref({
@@ -95,6 +101,21 @@ const navItems = [
 const isLoggedIn = computed(() => isAuthenticatedUser(currentUser.value))
 const userInitial = computed(() => (userSummary.value.nickname || '星').slice(0, 1))
 const userAvatar = computed(() => userSummary.value.avatarUrl || currentUser.value?.avatarUrl || '')
+const reportHint = computed(() => {
+  if (!route.query.type) {
+    return null
+  }
+  if (route.query.type === 'chat') {
+    return {
+      title: '私聊举报',
+      detail: `正在反馈与 ${route.query.name || '该用户'} 的私聊不适情况`
+    }
+  }
+  return {
+    title: '匹配举报',
+    detail: `正在反馈 ${route.query.title || '该匹配内容'} 的异常情况`
+  }
+})
 
 const goAuthCenter = () => {
   router.push(isLoggedIn.value ? '/auth-center' : '/login')
@@ -391,6 +412,28 @@ onMounted(loadUserSummary)
   border-radius: 18px;
   background: #fff;
   box-shadow: 0 12px 28px rgba(111, 98, 160, 0.14);
+}
+
+.report-context {
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  border: 1px solid #f2d5de;
+  border-radius: 14px;
+  color: #5f2840;
+  background: #fff3f7;
+}
+
+.report-context strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 16px;
+}
+
+.report-context p {
+  margin: 0;
+  color: #7c5667;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .safety-image-wrap img {

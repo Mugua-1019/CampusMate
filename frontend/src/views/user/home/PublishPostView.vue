@@ -250,7 +250,7 @@
                 <strong>请勿发布涉及暴力、歧视、违法、极端或不当内容。</strong>
                 <p>如遇不适或被冒犯，你可以随时屏蔽或举报。</p>
               </div>
-              <button type="button">查看社区规范 <ArrowRight /></button>
+              <button type="button" @click="goSafetyFeedback">查看社区规范 <ArrowRight /></button>
             </section>
 
             <section class="sensitive-row">
@@ -377,6 +377,7 @@ const customVentTag = ref('')
 const customVentTagVisible = ref(false)
 const {
   isLoggedIn,
+  verified,
   statusText: userStatusText,
   avatarText: userInitial,
   avatarUrl: userAvatar,
@@ -409,9 +410,9 @@ const navItems = [
   { label: '广场首页', icon: HomeFilled, route: '/home' },
   { label: '发布需求', icon: Promotion, active: true },
   { label: '我的聊天', icon: Message, route: '/chat' },
-  { label: '我的匹配', icon: StarFilled },
+  { label: '我的匹配', icon: StarFilled, route: '/my-match' },
   { label: '认证中心', icon: Lock, route: '/auth-center' },
-  { label: '安全反馈', icon: Flag },
+  { label: '安全反馈', icon: Flag, route: '/safety-feedback' },
   { label: '个人中心', icon: User, route: '/profile' }
 ]
 
@@ -552,12 +553,20 @@ const buildPostPayload = () => {
 }
 
 const submitDraft = async () => {
-  if (submitting.value || !validatePost()) {
+  if (submitting.value) {
     return
   }
   if (!isLoggedIn.value) {
     ElMessage.warning('请先登录后再发布需求')
     goLogin()
+    return
+  }
+  if (!verified.value) {
+    ElMessage.warning('请先完成校园认证后再发布需求')
+    goAuthCenter()
+    return
+  }
+  if (!validatePost()) {
     return
   }
 
@@ -595,7 +604,9 @@ const handleNav = (item) => {
     router.push(item.route)
   }
 }
-
+const goSafetyFeedback = () => {
+  router.push('/safety-feedback')
+}
 onMounted(() => {
   loadCurrentUserProfile().catch(() => {})
 })

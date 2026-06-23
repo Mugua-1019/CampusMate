@@ -18,6 +18,8 @@ public interface HomeService {
 
     HomePlazaVO.HomePostVO createPost(HomePostCreateRequest request);
 
+    HomePlazaVO.HomePostVO updatePost(Long postId, HomePostCreateRequest request);
+
     HomePlazaVO.HomePostComfortVO submitVentPostComfort(Long postId, Long userId);
 
     HomePlazaVO.HomePostReplyVO submitVentPostReply(Long postId, HomePostReplyRequest request);

@@ -243,11 +243,11 @@ const {
 
 const navItems = [
   { label: '广场首页', icon: HomeFilled, route: '/home', active: true },
-  { label: '发布需求', icon: Promotion },
+  { label: '发布需求', icon: Promotion, route: '/publish' },
   { label: '我的聊天', icon: Message, route: '/chat' },
-  { label: '我的匹配', icon: StarFilled },
+  { label: '我的匹配', icon: StarFilled, route: '/my-match' },
   { label: '认证中心', icon: Lock, route: '/auth-center' },
-  { label: '安全反馈', icon: Flag },
+  { label: '安全反馈', icon: Flag, route: '/safety-feedback' },
   { label: '个人中心', icon: User, route: '/profile' }
 ]
 

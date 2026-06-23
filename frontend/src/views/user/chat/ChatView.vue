@@ -61,16 +61,44 @@
           <aside class="conversation-panel">
             <div class="conversation-head">
               <h2>{{ showArchived ? '归档会话' : '全部会话' }} ({{ visibleConversations.length }})</h2>
-              <button aria-label="新建聊天"><EditPen /></button>
+              <button
+                v-if="archiveSelectMode"
+                class="archive-submit"
+                :disabled="selectedArchiveIds.length === 0 || archiveSubmitting"
+                @click="archiveSelectedConversations"
+              >
+                {{ archiveSubmitting ? '处理中...' : archiveBatchText }}
+              </button>
+              <button
+                :disabled="visibleConversations.length === 0"
+                :aria-label="archiveSelectMode ? '退出多选' : '多选归档'"
+                @click="toggleArchiveSelectMode"
+              >
+                <EditPen />
+              </button>
             </div>
 
-            <button
+            <div
               v-for="conversation in visibleConversations"
               :key="conversation.id"
               class="conversation-item"
-              :class="{ active: selectedConversation?.id === conversation.id }"
-              @click="selectConversation(conversation)"
+              :class="{
+                active: selectedConversation?.id === conversation.id,
+                checked: selectedArchiveIds.includes(conversation.id),
+                selecting: archiveSelectMode
+              }"
+              role="button"
+              tabindex="0"
+              @click="handleConversationClick(conversation)"
             >
+              <label v-if="archiveSelectMode" class="conversation-check" @click.stop>
+                <input
+                  type="checkbox"
+                  :checked="selectedArchiveIds.includes(conversation.id)"
+                  :disabled="conversation.id === 'pending'"
+                  @change="toggleArchiveCandidate(conversation)"
+                />
+              </label>
               <span class="avatar-wrap">
                 <img v-if="conversation.avatarUrl" :src="conversation.avatarUrl" alt="" />
                 <em v-else>{{ conversation.avatarText }}</em>
@@ -87,14 +115,14 @@
                 <time>{{ conversation.time }}</time>
                 <b v-if="conversation.unread">{{ conversation.unread }}</b>
               </span>
-            </button>
+            </div>
 
             <button class="archived-link" @click="showArchived = !showArchived">
               {{ showArchived ? '返回全部会话' : `查看已归档会话 (${archivedConversations.length})` }} <ArrowRight />
             </button>
           </aside>
 
-          <section class="message-panel">
+          <section class="message-panel" :class="{ empty: !selectedConversation }">
             <template v-if="selectedConversation">
               <header class="message-head">
                 <div>
@@ -112,9 +140,12 @@
                 </div>
                 <div class="message-tools">
                   <button aria-label="搜索聊天记录"><Search /></button>
-                  <button :aria-label="selectedConversation.archived ? '取消归档' : '归档会话'" @click="toggleArchiveSelected">
+                  <button aria-label="更多操作" @click="chatActionMenuOpen = !chatActionMenuOpen">
                     <MoreFilled />
                   </button>
+                  <section v-if="chatActionMenuOpen" class="chat-action-menu">
+                    <button @click="reportSelectedConversation"><Warning /> 举报</button>
+                  </section>
                 </div>
               </header>
 
@@ -125,7 +156,7 @@
                 <button aria-label="关闭安全提醒"><Close /></button>
               </section>
 
-              <div class="date-line">5月20日（周二）</div>
+              <div class="date-line">{{ currentChatDate }}</div>
 
               <section class="message-list" aria-label="聊天消息">
                 <article
@@ -236,7 +267,6 @@
             </section>
 
             <div class="profile-actions">
-              <button><Warning /> 举报</button>
               <button><CircleClose /> 拉黑</button>
             </div>
           </aside>
@@ -249,6 +279,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import {
   ArrowRight,
   CircleClose,
@@ -293,6 +324,10 @@ const messagesByConversation = ref({})
 const pendingConversation = ref(null)
 const showArchived = ref(false)
 const showAttachMenu = ref(false)
+const chatActionMenuOpen = ref(false)
+const archiveSelectMode = ref(false)
+const selectedArchiveIds = ref([])
+const archiveSubmitting = ref(false)
 const imageInput = ref(null)
 const fileInput = ref(null)
 const socket = ref(null)
@@ -309,9 +344,9 @@ const navItems = [
   { label: '广场首页', icon: HomeFilled, route: '/home' },
   { label: '发布需求', icon: Promotion, route: '/publish' },
   { label: '我的聊天', icon: Message, active: true, action: 'chat' },
-  { label: '我的匹配', icon: StarFilled },
+  { label: '我的匹配', icon: StarFilled, route: '/my-match' },
   { label: '认证中心', icon: Lock, route: '/auth-center' },
-  { label: '安全反馈', icon: Flag },
+  { label: '安全反馈', icon: Flag, route: '/safety-feedback' },
   { label: '个人中心', icon: User, route: '/profile' }
 ]
 
@@ -446,6 +481,13 @@ const selectedConversation = computed(() => {
   }
 })
 
+const currentChatDate = computed(() => new Intl.DateTimeFormat('zh-CN', {
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long'
+}).format(new Date()))
+const archiveBatchText = computed(() => `${showArchived.value ? '恢复' : '归档'}选中 (${selectedArchiveIds.value.length})`)
+
 const applyRouteSelection = async () => {
   const peerId = String(route.query.userId || route.query.peerId || '')
   if (!peerId) {
@@ -454,10 +496,11 @@ const applyRouteSelection = async () => {
     return
   }
 
-  const existed = conversations.value.find((item) => String(item.peerUserId) === peerId)
+  const existed = [...conversations.value, ...archivedConversations.value].find((item) => String(item.peerUserId) === peerId)
   if (existed) {
     pendingConversation.value = null
     selectedId.value = existed.id
+    showArchived.value = Boolean(existed.archived)
     loadMessages(existed.id)
     return
   }
@@ -476,11 +519,20 @@ const applyRouteSelection = async () => {
 
 const selectConversation = (conversation) => {
   selectedId.value = conversation.id
+  chatActionMenuOpen.value = false
   pendingConversation.value = conversation.id === 'pending' ? pendingConversation.value : null
   if (conversation.id !== 'pending') {
     loadMessages(conversation.id)
     router.replace({ path: '/chat', query: { userId: conversation.peerUserId } })
   }
+}
+
+const handleConversationClick = (conversation) => {
+  if (archiveSelectMode.value) {
+    toggleArchiveCandidate(conversation)
+    return
+  }
+  selectConversation(conversation)
 }
 
 const clearSelectedChat = () => {
@@ -547,9 +599,62 @@ const toggleArchiveSelected = async () => {
   if (!selectedConversation.value || selectedConversation.value.id === 'pending') {
     return
   }
-  await updateChatArchiveStatus(selectedConversation.value.id, !selectedConversation.value.archived)
+  const archived = !selectedConversation.value.archived
+  await updateChatArchiveStatus(selectedConversation.value.id, archived)
   selectedId.value = ''
   await loadChatHome()
+  ElMessage.success(archived ? '会话已归档' : '会话已恢复')
+}
+
+const toggleArchiveSelectMode = () => {
+  archiveSelectMode.value = !archiveSelectMode.value
+  selectedArchiveIds.value = []
+}
+
+const toggleArchiveCandidate = (conversation) => {
+  if (!conversation || conversation.id === 'pending') {
+    return
+  }
+  selectedArchiveIds.value = selectedArchiveIds.value.includes(conversation.id)
+    ? selectedArchiveIds.value.filter((id) => id !== conversation.id)
+    : [...selectedArchiveIds.value, conversation.id]
+}
+
+const archiveSelectedConversations = async () => {
+  const ids = selectedArchiveIds.value.filter((id) => id !== 'pending')
+  if (!ids.length) {
+    return
+  }
+  archiveSubmitting.value = true
+  try {
+    const archived = !showArchived.value
+    await Promise.all(ids.map((id) => updateChatArchiveStatus(id, archived)))
+    selectedArchiveIds.value = []
+    archiveSelectMode.value = false
+    selectedId.value = ''
+    await loadChatHome()
+    ElMessage.success(archived ? '已归档选中会话' : '已恢复选中会话')
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '批量处理会话失败')
+  } finally {
+    archiveSubmitting.value = false
+  }
+}
+
+const reportSelectedConversation = () => {
+  if (!selectedConversation.value) {
+    return
+  }
+  router.push({
+    path: '/safety-feedback',
+    query: {
+      type: 'chat',
+      userId: selectedConversation.value.peerUserId,
+      name: selectedConversation.value.name,
+      conversationId: selectedConversation.value.id
+    }
+  })
+  chatActionMenuOpen.value = false
 }
 
 const triggerImageUpload = () => {
@@ -930,11 +1035,13 @@ onMounted(async () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 10px;
   height: 78px;
   padding: 0 22px;
 }
 
 .conversation-head h2 {
+  flex: 1;
   margin: 0;
   color: #12121d;
   font-size: 19px;
@@ -945,7 +1052,25 @@ onMounted(async () => {
   color: #6d55f0;
 }
 
+.conversation-head button:disabled {
+  cursor: not-allowed;
+  opacity: 0.36;
+}
+
+.archive-submit {
+  width: auto;
+  min-width: 94px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, #7460f4, #9d7bff) !important;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 .conversation-item {
+  position: relative;
   display: grid;
   grid-template-columns: 58px 1fr auto;
   gap: 13px;
@@ -954,11 +1079,38 @@ onMounted(async () => {
   padding: 12px 14px 12px 18px;
   border-top: 1px solid #f0edf7;
   background: transparent;
+  cursor: pointer;
   text-align: left;
 }
 
 .conversation-item.active {
   background: linear-gradient(100deg, rgba(120, 99, 246, 0.16), rgba(232, 211, 255, 0.38));
+}
+
+.conversation-item.checked {
+  background: linear-gradient(100deg, rgba(120, 99, 246, 0.14), rgba(255, 244, 250, 0.6));
+}
+
+.conversation-item.selecting {
+  padding-left: 46px;
+}
+
+.conversation-check {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  transform: translateY(-50%);
+  cursor: pointer;
+}
+
+.conversation-check input {
+  width: 16px;
+  height: 16px;
+  accent-color: #745cf2;
 }
 
 .avatar-wrap {
@@ -1068,6 +1220,10 @@ onMounted(async () => {
   overflow: hidden;
 }
 
+.message-panel.empty {
+  grid-template-rows: 1fr;
+}
+
 .message-head {
   justify-content: space-between;
   height: 78px;
@@ -1119,12 +1275,51 @@ onMounted(async () => {
 }
 
 .message-tools {
+  position: relative;
   gap: 14px;
 }
 
 .message-tools svg {
   width: 24px;
   color: #6f6b86;
+}
+
+.chat-action-menu {
+  position: absolute;
+  top: 34px;
+  right: 0;
+  z-index: 12;
+  display: grid;
+  min-width: 104px;
+  padding: 6px;
+  border: 1px solid #eee7ff;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 14px 30px rgba(87, 75, 128, 0.16);
+}
+
+.chat-action-menu button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: #ef5b75;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.chat-action-menu button:hover {
+  background: #fff1f5;
+}
+
+.chat-action-menu svg {
+  width: 16px;
+  height: 16px;
+  color: #ef5b75;
 }
 
 .safety-strip {

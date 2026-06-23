@@ -23,14 +23,6 @@
           </button>
         </nav>
 
-        <section class="invite-card">
-          <div class="invite-visual">
-            <img :src="verifyImage" alt="" />
-          </div>
-          <h2>邀请好友</h2>
-          <p>一起遇见有趣的伙伴</p>
-          <button aria-label="邀请好友"><ArrowRight /></button>
-        </section>
       </aside>
 
       <section class="main-content" v-loading="loading">
@@ -100,7 +92,7 @@
           <article class="card tag-card">
             <div class="card-title">
               <h2>我的标签</h2>
-              <button @click="openEditDialog">编辑</button>
+              <button @click="goMatchPreference">编辑</button>
             </div>
             <div class="tag-list">
               <span v-for="tag in profile.interestTags" :key="tag">{{ tag }}</span>
@@ -112,7 +104,7 @@
           <article class="card preference-card">
             <div class="card-title">
               <h2>我的偏好搭子</h2>
-              <button @click="openEditDialog">编辑</button>
+              <button @click="openPreferenceDialog">编辑</button>
             </div>
             <div v-for="preference in preferences" :key="preference.label" class="preference-row">
               <span class="preference-icon" :class="preference.tone">
@@ -175,9 +167,9 @@
           <article class="card chat-card">
             <div class="card-title">
               <h2>最近聊天与匹配</h2>
-              <button>查看全部 <ArrowRight /></button>
+              <button @click="goChat">查看全部 <ArrowRight /></button>
             </div>
-            <div v-for="chat in chats" :key="chat.name" class="chat-row">
+            <div v-for="chat in chats" :key="chat.name" class="chat-row" @click="openRecentChat(chat)">
               <div class="mini-avatar" :class="chat.tone">{{ chat.avatar }}</div>
               <div>
                 <strong>{{ chat.name }} <span>{{ chat.tag }}</span></strong>
@@ -191,9 +183,9 @@
           <article class="card publish-card">
             <div class="card-title">
               <h2>我的发布</h2>
-              <button>查看全部 <ArrowRight /></button>
+              <button @click="goMyMatch">查看全部 <ArrowRight /></button>
             </div>
-            <div v-for="post in posts" :key="post.title" class="post-row">
+            <div v-for="post in posts" :key="post.title" class="post-row" @click="openPublishedPost(post)">
               <div class="post-type" :class="post.tone">{{ post.shortLabel }}</div>
               <div>
                 <strong>{{ post.title }} <span>{{ post.tag }}</span> <small>{{ post.period }}</small></strong>
@@ -211,19 +203,25 @@
         <section class="badge-section">
           <h2>我的成就徽章</h2>
           <div class="badge-grid">
-            <article v-for="badge in badges" :key="badge.title" class="badge-card" :class="badge.tone">
-              <div class="badge-blank" aria-label="徽章图片占位"></div>
+            <article
+              v-for="badge in featuredAchievements"
+              :key="badge.key"
+              class="badge-card"
+              :class="[badge.tone, { locked: !badge.achieved }]"
+            >
+              <img :src="badge.image" :alt="badge.title" class="badge-image" />
               <div>
                 <strong>{{ badge.title }}</strong>
-                <p>{{ badge.desc }}</p>
-                <span>获得于 {{ badge.date }}</span>
+                <p>{{ badge.condition }}</p>
+                <span>获得时间：{{ badge.achievedAt }}</span>
               </div>
             </article>
-            <article class="badge-card more-badge">
-              <div class="badge-blank" aria-label="更多徽章占位"></div>
+            <article class="badge-card more-badge" role="button" tabindex="0" @click="badgeWallVisible = true" @keydown.enter="badgeWallVisible = true">
+              <div class="badge-more-icon"><ArrowRight /></div>
               <div>
                 <strong>更多徽章</strong>
-                <p>敬请期待更多成就</p>
+                <p>打开完整徽章墙</p>
+                <span>共 {{ achievementBadges.length }} 枚</span>
               </div>
             </article>
           </div>
@@ -273,6 +271,55 @@
           {{ saving ? '保存中...' : '保存' }}
         </button>
       </template>
+    </el-dialog>
+
+    <el-dialog v-model="preferenceVisible" title="选择偏好档位" width="560px">
+      <section class="preference-dialog">
+        <article
+          v-for="preference in preferenceForm"
+          :key="preference.label"
+          class="preference-editor-row"
+        >
+          <span class="preference-icon" :class="preference.tone">
+            <component :is="preferenceIcon(preference.icon)" />
+          </span>
+          <div>
+            <strong>{{ preference.label }}</strong>
+            <p>{{ preferenceLevelText(preference.score) }}</p>
+          </div>
+          <el-rate
+            v-model="preference.score"
+            :max="6"
+            :texts="preferenceLevelTexts"
+            show-text
+          />
+        </article>
+        <p v-if="!preferenceForm.length" class="empty-note">暂无可编辑偏好</p>
+      </section>
+      <template #footer>
+        <button class="dialog-cancel" @click="preferenceVisible = false">取消</button>
+        <button class="dialog-save" :disabled="preferenceSaving || !preferenceForm.length" @click="submitPreferences">
+          {{ preferenceSaving ? '保存中...' : '保存' }}
+        </button>
+      </template>
+    </el-dialog>
+
+    <el-dialog v-model="badgeWallVisible" title="成就徽章墙" width="860px" class="badge-wall-dialog">
+      <section class="badge-wall-grid">
+        <article
+          v-for="badge in achievementBadges"
+          :key="badge.key"
+          class="badge-wall-card"
+          :class="[badge.tone, { locked: !badge.achieved }]"
+        >
+          <img :src="badge.image" :alt="badge.title" class="badge-wall-image" />
+          <div>
+            <strong>{{ badge.title }}</strong>
+            <p>{{ badge.condition }}</p>
+            <span>获得时间：{{ badge.achievedAt }}</span>
+          </div>
+        </article>
+      </section>
     </el-dialog>
 
     <el-dialog v-model="cropVisible" title="裁剪头像" width="520px" @closed="resetCropper">
@@ -338,10 +385,15 @@ import {
   StarFilled,
   User
 } from '@element-plus/icons-vue'
-import { fetchProfile, updateProfile, uploadAvatar } from '../../../api/profile'
+import { fetchProfile, updateProfile, updateProfilePreferences, uploadAvatar } from '../../../api/profile'
 import { getCurrentUser, saveCurrentUser } from '../../../utils/currentUser'
 import logoImage from '../../../assets/images/logo-star-mascot.png'
-import verifyImage from '../../../assets/images/renzheng.png'
+import anquanweishiImage from '../../../assets/images/chengjiu/anquanweishi.png'
+import pipeidarenImage from '../../../assets/images/chengjiu/pipeidaren.png'
+import xiaoyuanhuodituImage from '../../../assets/images/chengjiu/xiaoyuanhuoditu.png'
+import xuexidarenImage from '../../../assets/images/chengjiu/xuexidaren.png'
+import yundongdarenImage from '../../../assets/images/chengjiu/yundongdaren.png'
+import zuijiatingzhongImage from '../../../assets/images/chengjiu/zuijiatingzhong.png'
 import NotificationBell from '../../../components/NotificationBell.vue'
 import UserMenu from '../../../components/UserMenu.vue'
 
@@ -351,11 +403,15 @@ const currentUserId = computed(() => currentUser.value?.userId || 1)
 const keyword = ref('')
 const loading = ref(false)
 const saving = ref(false)
+const preferenceSaving = ref(false)
 const cropping = ref(false)
 const editVisible = ref(false)
+const preferenceVisible = ref(false)
+const badgeWallVisible = ref(false)
 const cropVisible = ref(false)
 const tagText = ref('')
 const profile = ref({})
+const preferenceForm = ref([])
 const cropFrameRef = ref(null)
 const cropImageRef = ref(null)
 const cropImageUrl = ref('')
@@ -388,25 +444,47 @@ const editForm = reactive({
 
 const navItems = [
   { label: '广场首页', icon: HomeFilled, route: '/home' },
-  { label: '发布需求', icon: Promotion },
+  { label: '发布需求', icon: Promotion, route: '/publish' },
   { label: '我的聊天', icon: Message, route: '/chat' },
-  { label: '我的匹配', icon: StarFilled },
+  { label: '我的匹配', icon: StarFilled, route: '/my-match' },
   { label: '认证中心', icon: Lock, route: '/auth-center' },
-  { label: '安全反馈', icon: Flag },
+  { label: '安全反馈', icon: Flag, route: '/safety-feedback' },
   { label: '个人中心', icon: User, active: true }
 ]
 
-const badges = [
-  { title: '学习搭子达人', desc: '累计匹配学习搭子 10 次', date: '2024-05-10', tone: 'purple' },
-  { title: '倾听者', desc: '累计倾听他人 20 次', date: '2024-05-08', tone: 'orange' },
-  { title: '运动打卡', desc: '连续运动打卡 7 天', date: '2024-05-05', tone: 'green' }
+const defaultAchievements = [
+  { key: 'anquanweishi', title: '安全卫士', condition: '完成校园认证', achieved: false, achievedAt: '----------', tone: 'green' },
+  { key: 'pipeidaren', title: '匹配达人', condition: '累计完成五次匹配', achieved: false, achievedAt: '----------', tone: 'purple' },
+  { key: 'xiaoyuanhuoditu', title: '校园活地图', condition: '完成校园认证且个人资料完善度达到100%', achieved: false, achievedAt: '----------', tone: 'blue' },
+  { key: 'xuexidaren', title: '学习达人', condition: '该用户完成三次学习搭子匹配', achieved: false, achievedAt: '----------', tone: 'indigo' },
+  { key: 'yundongdaren', title: '运动达人', condition: '该用户完成三次运动搭子匹配', achieved: false, achievedAt: '----------', tone: 'green' },
+  { key: 'zuijiatingzhong', title: '最佳听众', condition: '该用户累计评论或安慰倾诉广场帖子达十次', achieved: false, achievedAt: '----------', tone: 'orange' }
 ]
 
+const achievementImages = {
+  anquanweishi: anquanweishiImage,
+  pipeidaren: pipeidarenImage,
+  xiaoyuanhuoditu: xiaoyuanhuodituImage,
+  xuexidaren: xuexidarenImage,
+  yundongdaren: yundongdarenImage,
+  zuijiatingzhong: zuijiatingzhongImage
+}
+
 const preferences = computed(() => profile.value.preferences || [])
+const preferenceLevelTexts = ['轻度', '有点', '常用', '喜欢', '优先', '强烈']
 const weekBars = computed(() => profile.value.activity?.weekBars || [])
 const safetyItems = computed(() => profile.value.safety?.items || [])
 const chats = computed(() => profile.value.chats || [])
 const posts = computed(() => profile.value.posts || [])
+const achievementBadges = computed(() => {
+  const source = profile.value.achievements?.length ? profile.value.achievements : defaultAchievements
+  return source.map((badge) => ({
+    ...badge,
+    image: achievementImages[badge.key] || anquanweishiImage,
+    achievedAt: badge.achieved ? (badge.achievedAt || '已获得') : '----------'
+  }))
+})
+const featuredAchievements = computed(() => achievementBadges.value.slice(0, 3))
 const avatarText = computed(() => (profile.value.nickname || '星').slice(0, 1))
 const verifyText = computed(() => (profile.value.verified ? '已认证' : '待认证'))
 const displayAvatarUrl = computed(() => {
@@ -438,6 +516,11 @@ const iconMap = {
 
 const preferenceIcon = (icon) => iconMap[icon] || StarFilled
 
+const preferenceLevelText = (score) => {
+  const index = Math.max(1, Math.min(6, Number(score) || 1)) - 1
+  return `${preferenceLevelTexts[index]}偏好`
+}
+
 const loadProfile = async () => {
   loading.value = true
   try {
@@ -462,6 +545,16 @@ const openEditDialog = () => {
   editForm.bio = current.bio || ''
   tagText.value = (current.interestTags || []).join('，')
   editVisible.value = true
+}
+
+const openPreferenceDialog = () => {
+  preferenceForm.value = preferences.value.map((item) => ({
+    label: item.label,
+    icon: item.icon,
+    tone: item.tone,
+    score: Math.max(1, Math.min(6, Number(item.score) || 1))
+  }))
+  preferenceVisible.value = true
 }
 
 const handleAvatarChange = async (uploadFile) => {
@@ -645,6 +738,26 @@ const submitProfile = async () => {
   }
 }
 
+const submitPreferences = async () => {
+  preferenceSaving.value = true
+  try {
+    const { data } = await updateProfilePreferences({
+      userId: currentUserId.value,
+      preferences: preferenceForm.value.map((item) => ({
+        label: item.label,
+        score: item.score
+      }))
+    })
+    profile.value = data.data || {}
+    preferenceVisible.value = false
+    ElMessage.success('偏好档位已保存')
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '偏好保存失败')
+  } finally {
+    preferenceSaving.value = false
+  }
+}
+
 const handleNav = (item) => {
   if (item.route) {
     router.push(item.route)
@@ -653,6 +766,42 @@ const handleNav = (item) => {
 
 const goChat = () => {
   router.push('/chat')
+}
+
+const goMyMatch = () => {
+  router.push('/my-match')
+}
+
+const goMatchPreference = () => {
+  router.push({
+    path: '/my-match',
+    query: { editPreference: '1' }
+  })
+}
+
+const openRecentChat = (chat) => {
+  if (chat.peerUserId) {
+    router.push({
+      path: '/chat',
+      query: { userId: chat.peerUserId }
+    })
+    return
+  }
+  router.push({
+    path: '/chat',
+    query: chat.name ? { name: chat.name, source: chat.tag } : {}
+  })
+}
+
+const openPublishedPost = (post) => {
+  if (post.postId) {
+    router.push(`/${post.plaza === 'vent' ? 'vent-post' : 'match-post'}/${post.postId}`)
+    return
+  }
+  router.push({
+    path: '/my-match',
+    query: post.title ? { keyword: post.title } : {}
+  })
 }
 
 onMounted(loadProfile)
@@ -758,57 +907,9 @@ onMounted(loadProfile)
   background: linear-gradient(100deg, rgba(120, 99, 246, 0.18), rgba(232, 211, 255, 0.55));
 }
 
-.invite-card {
-  position: relative;
-  margin: auto 18px 0 2px;
-  padding: 18px;
-  border: 1px solid #efe8ff;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.invite-visual {
-  display: grid;
-  height: 84px;
-  place-items: center;
-  margin-bottom: 12px;
-  border-radius: 14px;
-  color: #ffbc35;
-  background: #f5efff;
-}
-
-.invite-visual img {
-  width: 118px;
-  height: 78px;
-  object-fit: contain;
-}
-
-.invite-card h2,
-.invite-card p,
 .card h2,
 .badge-section h2 {
   margin: 0;
-}
-
-.invite-card p {
-  margin-top: 8px;
-  color: #8c89a1;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.invite-card button {
-  position: absolute;
-  right: 16px;
-  bottom: 24px;
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 0;
-  border-radius: 50%;
-  color: #8a6df2;
-  background: #eee8ff;
 }
 
 .main-content {
@@ -1417,6 +1518,12 @@ onMounted(loadProfile)
   display: grid;
   align-items: center;
   border-bottom: 1px solid #eeedf5;
+  cursor: pointer;
+}
+
+.chat-row:hover,
+.post-row:hover {
+  background: rgba(246, 242, 255, 0.72);
 }
 
 .chat-row {
@@ -1589,12 +1696,39 @@ onMounted(loadProfile)
   background: #eefaf2;
 }
 
-.badge-blank {
+.badge-card.blue {
+  border-color: #cddff8;
+  background: #f0f6ff;
+}
+
+.badge-card.indigo {
+  border-color: #d7d5ff;
+  background: #f3f2ff;
+}
+
+.badge-card.locked {
+  border-color: #dedde8;
+  background: #f6f6f9;
+}
+
+.badge-image,
+.badge-wall-image {
+  object-fit: contain;
+  transition: filter 0.2s ease, opacity 0.2s ease;
+}
+
+.badge-image {
   width: 86px;
   height: 76px;
-  border: 2px dashed rgba(127, 113, 174, 0.26);
+  padding: 4px;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.48);
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.badge-card.locked .badge-image,
+.badge-wall-card.locked .badge-wall-image {
+  filter: grayscale(1);
+  opacity: 0.42;
 }
 
 .badge-card strong {
@@ -1616,6 +1750,112 @@ onMounted(loadProfile)
 
 .more-badge {
   border-style: dashed;
+  cursor: pointer;
+}
+
+.more-badge:hover {
+  border-color: #cfc4ff;
+  background: #fbf9ff;
+}
+
+.badge-more-icon {
+  display: grid;
+  width: 86px;
+  height: 76px;
+  place-items: center;
+  border: 1px dashed rgba(117, 93, 244, 0.34);
+  border-radius: 18px;
+  color: #7460f4;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.badge-more-icon :deep(svg) {
+  width: 28px;
+  height: 28px;
+}
+
+.badge-wall-dialog :deep(.el-dialog) {
+  border-radius: 18px;
+  background: #fff;
+}
+
+.badge-wall-dialog :deep(.el-dialog__title) {
+  color: #151936;
+  font-weight: 900;
+}
+
+.badge-wall-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.badge-wall-card {
+  display: grid;
+  grid-template-columns: 98px minmax(0, 1fr);
+  align-items: center;
+  gap: 18px;
+  min-height: 122px;
+  padding: 16px 18px;
+  border: 1px solid #ebe7f8;
+  border-radius: 12px;
+  background: #fbf9ff;
+}
+
+.badge-wall-card.purple {
+  border-color: #dbcfff;
+  background: #f6f0ff;
+}
+
+.badge-wall-card.orange {
+  border-color: #f3d9b5;
+  background: #fff5e8;
+}
+
+.badge-wall-card.green {
+  border-color: #ccead3;
+  background: #eefaf2;
+}
+
+.badge-wall-card.blue {
+  border-color: #cddff8;
+  background: #f0f6ff;
+}
+
+.badge-wall-card.indigo {
+  border-color: #d7d5ff;
+  background: #f3f2ff;
+}
+
+.badge-wall-card.locked {
+  border-color: #dedde8;
+  background: #f6f6f9;
+}
+
+.badge-wall-image {
+  width: 86px;
+  height: 86px;
+  padding: 6px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.62);
+}
+
+.badge-wall-card strong {
+  color: #25283f;
+  font-size: 17px;
+}
+
+.badge-wall-card p {
+  margin: 10px 0;
+  color: #575a78;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+.badge-wall-card span {
+  color: #6f728b;
+  font-size: 13px;
 }
 
 .avatar-uploader {
@@ -1706,6 +1946,48 @@ onMounted(loadProfile)
   cursor: pointer;
 }
 
+.preference-dialog {
+  display: grid;
+  gap: 14px;
+}
+
+.preference-editor-row {
+  display: grid;
+  grid-template-columns: 36px minmax(116px, 1fr) minmax(220px, 260px);
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid #eee9fa;
+  border-radius: 10px;
+  background: #fbf9ff;
+}
+
+.preference-editor-row strong {
+  display: block;
+  color: #25283f;
+  font-size: 14px;
+}
+
+.preference-editor-row p,
+.empty-note {
+  margin: 4px 0 0;
+  color: #777a94;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.preference-editor-row :deep(.el-rate) {
+  justify-content: flex-end;
+  height: auto;
+}
+
+.preference-editor-row :deep(.el-rate__text) {
+  min-width: 38px;
+  color: #7460f4;
+  font-size: 12px;
+  font-weight: 900;
+}
+
 @media (max-width: 1320px) {
   .profile-shell {
     grid-template-columns: 220px minmax(0, 1fr);
@@ -1754,10 +2036,6 @@ onMounted(loadProfile)
 
   .nav-item {
     flex: 0 0 auto;
-  }
-
-  .invite-card {
-    display: none;
   }
 
   .main-content {

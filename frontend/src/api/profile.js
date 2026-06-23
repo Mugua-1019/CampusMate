@@ -8,6 +8,10 @@ export const updateProfile = (data) => {
   return axios.put('/api/profile', data)
 }
 
+export const updateProfilePreferences = (data) => {
+  return axios.put('/api/profile/preferences', data)
+}
+
 export const uploadAvatar = (file) => {
   const formData = new FormData()
   formData.append('file', file)

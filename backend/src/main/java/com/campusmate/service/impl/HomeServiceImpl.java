@@ -23,6 +23,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -107,6 +109,7 @@ public class HomeServiceImpl implements HomeService {
         if (userId == null || userId <= 0) {
             throw new SecurityException("please login first");
         }
+        requireVerifiedUser(userId);
 
         String plaza = requiredText(request.getPlaza(), "plaza");
         if (!MATCH_PLAZA.equals(plaza) && !VENT_PLAZA.equals(plaza)) {
@@ -149,6 +152,42 @@ public class HomeServiceImpl implements HomeService {
 
         requireOne(homePostMapper.insertPost(post), "home post insert");
         return toPostVO(post);
+    }
+
+    @Override
+    public HomePlazaVO.HomePostVO updatePost(Long postId, HomePostCreateRequest request) {
+        Long userId = request == null ? null : request.getUserId();
+        if (postId == null || postId <= 0) {
+            throw new IllegalArgumentException("post id is required");
+        }
+        if (userId == null || userId <= 0) {
+            throw new SecurityException("please login first");
+        }
+
+        HomePost current = homePostMapper.selectVisibleMatchPostById(postId);
+        if (current == null) {
+            throw new IllegalArgumentException("match post not found");
+        }
+        if (!userId.equals(current.getPublisherUserId())) {
+            throw new SecurityException("only publisher can edit this post");
+        }
+
+        HomePost post = new HomePost();
+        post.setId(postId);
+        post.setPublisherUserId(userId);
+        post.setCategory(limitText(requiredText(request.getCategory(), "category"), 40));
+        post.setTitle(limitText(requiredText(request.getTitle(), "title"), 80));
+        post.setTags(limitText(joinTextList(request.getTags()), 255));
+        post.setDescription(limitText(requiredText(request.getDescription(), "description"), 500));
+        post.setExpectedTime(limitText(defaultText(request.getTime(), "时间待定"), 80));
+        post.setExpectedLocation(limitText(defaultText(request.getLocation(), "地点待定"), 120));
+        post.setAaFee(limitText(defaultText(request.getAaFee(), "AA制，费用待定"), 80));
+        post.setMaxCount(normalizeMaxCount(request.getMaxCount(), 2));
+        post.setAnonymous(Boolean.TRUE.equals(request.getAnonymous()));
+
+        requireOne(homePostMapper.updateMatchPost(post), "home post update");
+        HomePost updated = homePostMapper.selectVisibleMatchPostById(postId);
+        return toPostVO(updated == null ? post : updated);
     }
 
     private void requireVerifiedUser(Long userId) {
@@ -534,11 +573,21 @@ public class HomeServiceImpl implements HomeService {
         if (time == null) {
             return "刚刚";
         }
-        long days = java.time.Duration.between(time, LocalDateTime.now()).toDays();
+        long days = ChronoUnit.DAYS.between(time.toLocalDate(), LocalDate.now());
         if (days <= 0) {
             return "今天";
         }
-        return "已过 " + days + " 天";
+        if (days == 1) {
+            return "昨天";
+        }
+        if (days < 7) {
+            return days + " 天前";
+        }
+        long weeks = days / 7;
+        if (weeks < 4) {
+            return weeks + " 周前";
+        }
+        return time.toLocalDate().toString();
     }
 
     private List<String> splitTags(String tags) {
