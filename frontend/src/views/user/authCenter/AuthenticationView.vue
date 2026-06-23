@@ -1,4 +1,4 @@
-<template>
+]<template>
   <main class="auth-page">
     <section class="auth-shell">
       <aside class="sidebar">
