@@ -92,7 +92,7 @@
           <article class="card tag-card">
             <div class="card-title">
               <h2>我的标签</h2>
-              <button @click="goMatchPreference">编辑</button>
+              <button @click="openEditDialog">编辑</button>
             </div>
             <div class="tag-list">
               <span v-for="tag in profile.interestTags" :key="tag">{{ tag }}</span>
@@ -770,13 +770,6 @@ const goChat = () => {
 
 const goMyMatch = () => {
   router.push('/my-match')
-}
-
-const goMatchPreference = () => {
-  router.push({
-    path: '/my-match',
-    query: { editPreference: '1' }
-  })
 }
 
 const openRecentChat = (chat) => {

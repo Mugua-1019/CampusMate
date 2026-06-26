@@ -30,8 +30,8 @@
       <section class="page-body">
         <header class="topbar">
           <div class="heading-copy">
-            <h1>{{ activeMode === 'vent' ? '发布倾诉需求' : '发布匹配需求' }}</h1>
-            <p>{{ activeMode === 'vent' ? '在这里，说出你心里的话。星伴会保护你的隐私，温柔陪伴你。' : '写清楚时间、地点和期待，让合适的同学更快找到你。' }}</p>
+            <h1>{{ pageTitle }}</h1>
+            <p>{{ pageDescription }}</p>
           </div>
 
           <div class="top-actions">
@@ -52,8 +52,8 @@
         </header>
 
         <section class="mode-tabs" aria-label="发布类型">
-          <button :class="{ active: activeMode === 'match' }" @click="activeMode = 'match'">匹配广场</button>
-          <button :class="{ active: activeMode === 'vent' }" @click="activeMode = 'vent'">倾诉广场</button>
+          <button :class="{ active: activeMode === 'match' }" :disabled="isEditingPost" @click="activeMode = 'match'">匹配广场</button>
+          <button :class="{ active: activeMode === 'vent' }" :disabled="isEditingPost" @click="activeMode = 'vent'">倾诉广场</button>
         </section>
 
         <section class="content-layout">
@@ -265,10 +265,10 @@
               <button type="button" class="draft-button" @click="saveDraft">保存草稿</button>
               <button type="submit" class="publish-button" :disabled="submitting">
                 <Promotion />
-                {{ submitting ? '发布中...' : `发布到${activeMode === 'vent' ? '倾诉广场' : '匹配广场'}` }}
+                {{ submitButtonText }}
               </button>
             </footer>
-            <p class="form-note">发布后可在“我的{{ activeMode === 'vent' ? '倾诉' : '匹配' }}”查看进度与回应。</p>
+            <p class="form-note">{{ formNote }}</p>
           </form>
 
           <aside class="preview-column">
@@ -323,7 +323,7 @@
 
 <script setup>
 import { computed, h, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   ArrowRight,
@@ -343,7 +343,7 @@ import {
 } from '@element-plus/icons-vue'
 import logoImage from '../../../assets/images/logo-star-mascot.png'
 import verifyImage from '../../../assets/images/renzheng.png'
-import { createHomePost } from '../../../api/home'
+import { createHomePost, fetchHomePostDetail, updateHomePost } from '../../../api/home'
 import { useCurrentUserProfile } from '../../../composables/useCurrentUserProfile'
 import NotificationBell from '../../../components/NotificationBell.vue'
 import UserMenu from '../../../components/UserMenu.vue'
@@ -369,12 +369,18 @@ const PublishStep = {
 }
 
 const router = useRouter()
+const route = useRoute()
 const activeMode = ref('vent')
 const keyword = ref('')
 const activeSensitive = ref([])
 const submitting = ref(false)
 const customVentTag = ref('')
 const customVentTagVisible = ref(false)
+const editPostId = computed(() => {
+  const id = route.query.editPostId
+  return Array.isArray(id) ? id[0] : id
+})
+const isEditingPost = computed(() => Boolean(editPostId.value))
 const {
   isLoggedIn,
   verified,
@@ -450,6 +456,35 @@ const previewTitle = computed(() => {
     return ventForm.title || '考试压力好大，想找个人听我说说'
   }
   return matchForm.title || '周五晚想找羽毛球搭子'
+})
+const pageTitle = computed(() => {
+  if (isEditingPost.value) {
+    return '编辑匹配需求'
+  }
+  return activeMode.value === 'vent' ? '发布倾诉需求' : '发布匹配需求'
+})
+const pageDescription = computed(() => {
+  if (isEditingPost.value) {
+    return '修改时间、地点和期待后，同学会看到最新的匹配信息。'
+  }
+  return activeMode.value === 'vent'
+    ? '在这里，说出你心里的话。星伴会保护你的隐私，温柔陪伴你。'
+    : '写清楚时间、地点和期待，让合适的同学更快找到你。'
+})
+const submitButtonText = computed(() => {
+  if (submitting.value) {
+    return isEditingPost.value ? '保存中...' : '发布中...'
+  }
+  if (isEditingPost.value) {
+    return '保存修改'
+  }
+  return `发布到${activeMode.value === 'vent' ? '倾诉广场' : '匹配广场'}`
+})
+const formNote = computed(() => {
+  if (isEditingPost.value) {
+    return '保存后可在“我的匹配”继续查看进度与回应。'
+  }
+  return `发布后可在“我的${activeMode.value === 'vent' ? '倾诉' : '匹配'}”查看进度与回应。`
 })
 const previewContent = computed(() => {
   if (activeMode.value === 'vent') {
@@ -552,6 +587,32 @@ const buildPostPayload = () => {
   }
 }
 
+const fillMatchForm = (post) => {
+  activeMode.value = 'match'
+  matchForm.title = post.title || ''
+  matchForm.category = post.category || matchForm.category
+  matchForm.content = post.description || post.content || ''
+  matchForm.time = post.time || ''
+  matchForm.location = post.location || ''
+  matchForm.people = post.maxCount ? `${post.maxCount} 人` : matchForm.people
+  matchForm.aaFee = post.aaFee || ''
+  matchForm.tags = Array.isArray(post.tags) ? [...post.tags] : []
+  matchForm.identity = post.anonymous ? '匿名发布' : '实名发布'
+}
+
+const loadEditingPost = async () => {
+  if (!editPostId.value) {
+    return
+  }
+  try {
+    const response = await fetchHomePostDetail(editPostId.value)
+    fillMatchForm(response.data.data || {})
+  } catch (error) {
+    ElMessage.error(error.response?.data?.message || '帖子加载失败，无法编辑')
+    router.push('/my-match')
+  }
+}
+
 const submitDraft = async () => {
   if (submitting.value) {
     return
@@ -572,6 +633,12 @@ const submitDraft = async () => {
 
   submitting.value = true
   try {
+    if (isEditingPost.value) {
+      await updateHomePost(editPostId.value, buildPostPayload())
+      ElMessage.success('匹配需求已更新')
+      router.push(`/match-post/${editPostId.value}`)
+      return
+    }
     const response = await createHomePost(buildPostPayload())
     const createdPost = response.data.data
     ElMessage.success(`已发布到${activeMode.value === 'vent' ? '倾诉广场' : '匹配广场'}`)
@@ -609,6 +676,7 @@ const goSafetyFeedback = () => {
 }
 onMounted(() => {
   loadCurrentUserProfile().catch(() => {})
+  loadEditingPost()
 })
 </script>
 
