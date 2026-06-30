@@ -9,7 +9,8 @@ import ChatView from '../views/user/chat/ChatView.vue'
 import LoginView from '../views/user/login/LoginView.vue'
 import ProfileView from '../views/user/profile/ProfileView.vue'
 import AuthenticationView from '../views/user/authCenter/AuthenticationView.vue'
-import { getCurrentUser, isAuthenticatedUser } from '../utils/currentUser'
+import AdminDashboardView from '../views/admin/AdminDashboardView.vue'
+import { getCurrentAdmin, getCurrentRole, getCurrentUser, isAuthenticatedAdmin, isAuthenticatedUser, ROLE_ADMIN, ROLE_USER } from '../utils/currentUser'
 import { fetchProfile } from '../api/profile'
 
 const UNVERIFIED_ALLOWED_ROUTE_NAMES = new Set(['home', 'authCenter', 'profile'])
@@ -77,6 +78,11 @@ const routes = [
     path: '/auth-center',
     name: 'authCenter',
     component: AuthenticationView
+  },
+  {
+    path: '/admin',
+    name: 'adminDashboard',
+    component: AdminDashboardView
   }
 ]
 
@@ -86,7 +92,17 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to) => {
-  const currentUser = getCurrentUser()
+  const currentRole = getCurrentRole()
+  const currentAdmin = currentRole === ROLE_ADMIN ? getCurrentAdmin() : null
+  if (to.name === 'adminDashboard') {
+    return isAuthenticatedAdmin(currentAdmin) ? undefined : { name: 'login' }
+  }
+
+  if (currentRole === ROLE_ADMIN && to.name !== 'login') {
+    return { name: 'adminDashboard' }
+  }
+
+  const currentUser = currentRole === ROLE_USER ? getCurrentUser() : null
   if ((to.name === 'profile' || to.name === 'authCenter') && !isAuthenticatedUser(currentUser)) {
     return { name: 'login' }
   }

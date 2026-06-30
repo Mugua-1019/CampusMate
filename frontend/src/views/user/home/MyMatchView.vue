@@ -45,7 +45,7 @@
               v-if="isLoggedIn"
               :avatar-url="userAvatar"
               :avatar-text="userInitial"
-              :status-text="userSummary.verified ? '已认证' : '待认证'"
+              :status-text="userStatusText"
             />
             <button v-else class="login-chip" @click="goLogin">登录</button>
           </div>
@@ -140,7 +140,7 @@
         <section class="side-card safety-card">
           <div class="side-title">
             <h2>安全提醒</h2>
-            <button>更多</button>
+            <button @click="goSafetyFeedback">更多</button>
           </div>
           <ul>
             <li>不泄露个人隐私信息</li>
@@ -148,7 +148,7 @@
             <li>遇到不适及时举报</li>
             <li>文明交流，友善互助</li>
           </ul>
-          <button class="guide-button"><Lock /> 查看安全指南</button>
+          <button class="guide-button" @click="goSafetyFeedback"><Lock /> 查看安全指南</button>
         </section>
 
         <section class="side-card recent-card">
@@ -238,13 +238,12 @@ import logoImage from '../../../assets/images/logo-star-mascot.png'
 import verifyImage from '../../../assets/images/renzheng.png'
 import NotificationBell from '../../../components/NotificationBell.vue'
 import UserMenu from '../../../components/UserMenu.vue'
-import { getCurrentUser, isAuthenticatedUser } from '../../../utils/currentUser'
+import { useCurrentUserProfile } from '../../../composables/useCurrentUserProfile'
 import { approveMatchRequest, fetchMyMatches, rejectMatchRequest, submitMatchPostRequest } from '../../../api/home'
 
 const router = useRouter()
 const keyword = ref('')
 const startedFilter = ref('all')
-const currentUser = ref(getCurrentUser())
 const openMenuId = ref(null)
 const preferenceEditVisible = ref(false)
 const preferenceTagInput = ref('')
@@ -254,11 +253,14 @@ const preferenceDraft = reactive({
   activeTimes: [],
   tags: []
 })
-const userSummary = ref({
-  verified: true,
-  nickname: currentUser.value?.nickname || '小星同学',
-  avatarUrl: currentUser.value?.avatarUrl || ''
-})
+const {
+  currentUser,
+  isLoggedIn,
+  statusText: userStatusText,
+  avatarText: userInitial,
+  avatarUrl: userAvatar,
+  loadProfile: loadCurrentUserProfile
+} = useCurrentUserProfile()
 
 const navItems = [
   { label: '广场首页', icon: HomeFilled, route: '/home' },
@@ -266,7 +268,7 @@ const navItems = [
   { label: '我的聊天', icon: Message, route: '/chat' },
   { label: '我的匹配', icon: StarFilled, route: '/my-match', active: true },
   { label: '认证中心', icon: Lock, route: '/auth-center' },
-  { label: '安全反馈', icon: Flag },
+  { label: '安全反馈', icon: Flag, route: '/safety-feedback' },
   { label: '个人中心', icon: User, route: '/profile' }
 ]
 
@@ -427,9 +429,6 @@ const recentMatches = ref([
   { name: '深夜', title: '深夜 emo 聊天树洞', category: '情感陪伴', time: '2 周前', avatar: avatarPool[3] }
 ])
 
-const isLoggedIn = computed(() => isAuthenticatedUser(currentUser.value))
-const userInitial = computed(() => (userSummary.value.nickname || '星').slice(0, 1))
-const userAvatar = computed(() => userSummary.value.avatarUrl || currentUser.value?.avatarUrl || '')
 const allMatchPosts = computed(() => [...startedPosts.value, ...joinedPosts.value])
 const filteredMatchPosts = computed(() => {
   const source = startedFilter.value === 'mine'
@@ -634,6 +633,10 @@ const goAuthCenter = () => {
   router.push(isLoggedIn.value ? '/auth-center' : '/login')
 }
 
+const goSafetyFeedback = () => {
+  router.push('/safety-feedback')
+}
+
 const loadMyMatches = async () => {
   if (!isLoggedIn.value) {
     return
@@ -658,8 +661,9 @@ const loadMyMatches = async () => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadMatchPreference()
+  loadCurrentUserProfile().catch(() => {})
   loadMyMatches()
 })
 </script>

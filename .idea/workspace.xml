@@ -5,7 +5,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8d15c41b-2da2-46dc-8172-0e95ed8cb436" name="更改" comment="1">
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources.local.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources/1f255313-629c-475a-a89f-f44dead1f552.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dataSources/1f255313-629c-475a-a89f-f44dead1f552.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.AuthCenterServiceImplTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.AuthCenterServiceImplTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.AuthServiceImplTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.AuthServiceImplTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.HomeServiceImplTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.HomeServiceImplTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.ProfileServiceImplTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.campusmate.service.ProfileServiceImplTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.AuthCenterServiceImplTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.AuthCenterServiceImplTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.AuthServiceImplTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.AuthServiceImplTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.HomeServiceImplTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.HomeServiceImplTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.ProfileServiceImplTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.campusmate.service.ProfileServiceImplTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-B88z7e89.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/dist/assets/index-BRxUY0kS.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/dist/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/api/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/api/auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/router/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/utils/currentUser.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/utils/currentUser.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/user/home/MyMatchView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/user/home/MyMatchView.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/views/user/login/LoginView.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/views/user/login/LoginView.vue" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -178,6 +200,8 @@
       <workItem from="1782346510763" duration="8583000" />
       <workItem from="1782432485184" duration="7286000" />
       <workItem from="1782453639583" duration="8095000" />
+      <workItem from="1782693910662" duration="7407000" />
+      <workItem from="1782778363699" duration="2758000" />
     </task>
     <task id="LOCAL-00001" summary="1">
       <option name="closed" value="true" />
@@ -259,11 +283,30 @@
       <option name="project" value="LOCAL" />
       <updated>1782458139576</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="1">
+      <option name="closed" value="true" />
+      <created>1782694044783</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1782694044783</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="1" />

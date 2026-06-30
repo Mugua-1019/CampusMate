@@ -116,8 +116,8 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Hide, Lock, OfficeBuilding, User, View } from '@element-plus/icons-vue'
 import logoImage from '../../../assets/images/logo-star-mascot.png'
-import { login, register, resetPassword as resetPasswordApi } from '../../../api/auth'
-import { clearCurrentUser, saveCurrentUser } from '../../../utils/currentUser'
+import { adminLogin, login, register, resetPassword as resetPasswordApi } from '../../../api/auth'
+import { clearCurrentAdmin, clearCurrentUser, saveCurrentAdmin, saveCurrentUser } from '../../../utils/currentUser'
 
 const router = useRouter()
 const activeTab = ref('login')
@@ -137,7 +137,12 @@ const goHome = () => {
   router.push('/home')
 }
 
+const goAdminHome = () => {
+  router.push('/admin')
+}
+
 const goGuestHome = () => {
+  clearCurrentAdmin()
   clearCurrentUser()
   goHome()
 }
@@ -162,8 +167,18 @@ const handleSubmit = async () => {
 
   submitting.value = true
   try {
+    if (activeTab.value === 'login' && loginAccount === 'admin') {
+      const response = await adminLogin({ username: loginAccount, password: password.value })
+      clearCurrentUser()
+      saveCurrentAdmin(response.data.data)
+      ElMessage.success('管理员登录成功')
+      goAdminHome()
+      return
+    }
+
     const request = { account: loginAccount, password: password.value, nickname: nickname.value.trim() }
     const response = activeTab.value === 'login' ? await login(request) : await register(request)
+    clearCurrentAdmin()
     saveCurrentUser(response.data.data)
     ElMessage.success(activeTab.value === 'login' ? '登录成功' : '注册成功')
     goHome()

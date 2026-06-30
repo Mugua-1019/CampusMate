@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campusmate.mapper.AdminMapper">
+
+    <select id="selectAdminByUsername" resultType="map">
+        select
+            admin_id as adminId,
+            username,
+            display_name as displayName,
+            role,
+            password_salt as passwordSalt,
+            password_hash as passwordHash,
+            enabled
+        from admin_account
+        where username = #{username}
+        limit 1
+    </select>
+
+    <select id="selectAdminById" resultType="map">
+        select
+            admin_id as adminId,
+            username,
+            display_name as displayName,
+            role,
+            enabled
+        from admin_account
+        where admin_id = #{adminId}
+        limit 1
+    </select>
+
+    <update id="updateAdminLastLogin">
+        update admin_account
+        set last_login_at = now()
+        where admin_id = #{adminId}
+    </update>
+
+    <select id="countUsers" resultType="int">
+        select count(1)
+        from user_account a
+        left join user_profile p on p.user_id = a.user_id
+        where 1 = 1
+        <if test="keyword != null and keyword != ''">
+          and (
+              a.account like concat('%', #{keyword}, '%')
+              or a.phone like concat('%', #{keyword}, '%')
+              or a.email like concat('%', #{keyword}, '%')
+              or p.nickname like concat('%', #{keyword}, '%')
+              or p.real_name like concat('%', #{keyword}, '%')
+          )
+        </if>
+        <if test="status == 'enabled'">
+          and a.enabled = 1
+        </if>
+        <if test="status == 'disabled'">
+          and a.enabled = 0
+        </if>
+    </select>
+
+    <select id="selectUsers" resultType="map">
+        select
+            a.user_id as userId,
+            a.account,
+            a.phone,
+            a.email,
+            a.enabled,
+            p.nickname,
+            p.real_name as realName,
+            p.verified,
+            p.verify_status as verifyStatus
+        from user_account a
+        left join user_profile p on p.user_id = a.user_id
+        where 1 = 1
+        <if test="keyword != null and keyword != ''">
+          and (
+              a.account like concat('%', #{keyword}, '%')
+              or a.phone like concat('%', #{keyword}, '%')
+              or a.email like concat('%', #{keyword}, '%')
+              or p.nickname like concat('%', #{keyword}, '%')
+              or p.real_name like concat('%', #{keyword}, '%')
+          )
+        </if>
+        <if test="status == 'enabled'">
+          and a.enabled = 1
+        </if>
+        <if test="status == 'disabled'">
+          and a.enabled = 0
+        </if>
+        order by a.user_id desc
+        limit #{size} offset #{offset}
+    </select>
+
+    <select id="selectUserDetail" resultType="map">
+        select
+            a.user_id as userId,
+            a.account,
+            a.phone,
+            a.email,
+            a.enabled,
+            p.avatar_url as avatarUrl,
+            p.nickname,
+            p.gender,
+            p.grade,
+            p.college,
+            p.major,
+            p.interest_tags as interestTags,
+            p.bio,
+            p.real_name as realName,
+            p.verified,
+            p.verify_status as verifyStatus,
+            (select count(1) from home_post hp where hp.publisher_user_id = a.user_id) as postCount,
+            (select count(1) from home_post_report hr where hr.reporter_user_id = a.user_id) as reportCount
+        from user_account a
+        left join user_profile p on p.user_id = a.user_id
+        where a.user_id = #{userId}
+        limit 1
+    </select>
+
+    <update id="updateUserEnabled">
+        update user_account
+        set enabled = #{enabled}
+        where user_id = #{userId}
+    </update>
+
+    <select id="countPosts" resultType="int">
+        select count(1)
+        from home_post p
+        where 1 = 1
+        <if test="keyword != null and keyword != ''">
+          and (
+              p.title like concat('%', #{keyword}, '%')
+              or p.description like concat('%', #{keyword}, '%')
+              or p.publisher_name like concat('%', #{keyword}, '%')
+              or p.tags like concat('%', #{keyword}, '%')
+          )
+        </if>
+        <if test="plaza != null and plaza != ''">
+          and p.plaza = #{plaza}
+        </if>
+        <if test="reviewStatus != null and reviewStatus != ''">
+          and p.review_status = #{reviewStatus}
+        </if>
+    </select>
+
+    <select id="selectPosts" resultType="map">
+        select
+            p.id,
+            p.plaza,
+            p.publisher_user_id as publisherUserId,
+            p.category,
+            p.title,
+            p.status,
+            p.review_status as reviewStatus,
+            p.deleted,
+            p.publisher_name as publisherName,
+            p.current_count as currentCount,
+            p.max_count as maxCount,
+            p.created_at as createdAt,
+            p.updated_at as updatedAt
+        from home_post p
+        where 1 = 1
+        <if test="keyword != null and keyword != ''">
+          and (
+              p.title like concat('%', #{keyword}, '%')
+              or p.description like concat('%', #{keyword}, '%')
+              or p.publisher_name like concat('%', #{keyword}, '%')
+              or p.tags like concat('%', #{keyword}, '%')
+          )
+        </if>
+        <if test="plaza != null and plaza != ''">
+          and p.plaza = #{plaza}
+        </if>
+        <if test="reviewStatus != null and reviewStatus != ''">
+          and p.review_status = #{reviewStatus}
+        </if>
+        order by p.created_at desc, p.id desc
+        limit #{size} offset #{offset}
+    </select>
+
+    <select id="selectPostDetail" resultType="map">
+        select
+            p.id,
+            p.plaza,
+            p.publisher_user_id as publisherUserId,
+            p.category,
+            p.title,
+            p.status,
+            p.tags,
+            p.description,
+            p.expected_time as expectedTime,
+            p.expected_location as expectedLocation,
+            p.aa_fee as aaFee,
+            p.publisher_name as publisherName,
+            p.publisher_status as publisherStatus,
+            p.publisher_status_note as publisherStatusNote,
+            p.anonymous,
+            p.verified,
+            p.current_count as currentCount,
+            p.max_count as maxCount,
+            p.current_state as currentState,
+            p.hope_you_can as hopeYouCan,
+            p.preferred_way as preferredWay,
+            p.gentle_replies as gentleReplies,
+            p.review_status as reviewStatus,
+            p.deleted,
+            p.created_at as createdAt,
+            p.updated_at as updatedAt
+        from home_post p
+        where p.id = #{postId}
+        limit 1
+    </select>
+
+    <update id="updatePostReviewStatus">
+        update home_post
+        set review_status = #{reviewStatus},
+            updated_at = now()
+        where id = #{postId}
+    </update>
+
+    <update id="updatePostDeleted">
+        update home_post
+        set deleted = #{deleted},
+            updated_at = now()
+        where id = #{postId}
+    </update>
+
+    <select id="countReports" resultType="int">
+        select count(1)
+        from home_post_report r
+        where 1 = 1
+        <if test="status != null and status != ''">
+          and r.status = #{status}
+        </if>
+    </select>
+
+    <select id="selectReports" resultType="map">
+        select
+            r.report_id as reportId,
+            r.post_id as postId,
+            r.reporter_user_id as reporterUserId,
+            r.reason,
+            r.detail,
+            r.contact,
+            r.status,
+            r.created_at as createdAt,
+            p.title as postTitle,
+            p.plaza
+        from home_post_report r
+        left join home_post p on p.id = r.post_id
+        where 1 = 1
+        <if test="status != null and status != ''">
+          and r.status = #{status}
+        </if>
+        order by r.created_at desc, r.report_id desc
+        limit #{size} offset #{offset}
+    </select>
+
+    <update id="updateReportStatus">
+        update home_post_report
+        set status = #{status}
+        where report_id = #{reportId}
+    </update>
+
+    <select id="countAuthRecords" resultType="int">
+        select count(1)
+        from auth_center_record r
+        where r.auth_type = 'campus'
+        <if test="status != null and status != ''">
+          and r.status = #{status}
+        </if>
+    </select>
+
+    <select id="selectAuthRecords" resultType="map">
+        select
+            r.record_id as recordId,
+            r.user_id as userId,
+            p.nickname,
+            r.school,
+            r.student_no as studentNo,
+            r.real_name as realName,
+            r.identity_type as identityType,
+            r.material_name as materialName,
+            r.material_url as materialUrl,
+            r.status,
+            r.feedback,
+            r.submitted_at as submittedAt,
+            r.reviewed_at as reviewedAt
+        from auth_center_record r
+        left join user_profile p on p.user_id = r.user_id
+        where r.auth_type = 'campus'
+        <if test="status != null and status != ''">
+          and r.status = #{status}
+        </if>
+        order by case r.status when 'pending' then 0 when 'passed' then 1 else 2 end,
+                 r.submitted_at desc,
+                 r.record_id desc
+        limit #{size} offset #{offset}
+    </select>
+
+    <select id="selectAuthRecordById" resultType="map">
+        select
+            record_id as recordId,
+            user_id as userId,
+            auth_type as authType,
+            school,
+            student_no as studentNo,
+            real_name as realName,
+            identity_type as identityType,
+            material_name as materialName,
+            material_url as materialUrl,
+            status,
+            feedback,
+            submitted_at as submittedAt,
+            reviewed_at as reviewedAt
+        from auth_center_record
+        where record_id = #{recordId}
+          and auth_type = 'campus'
+        limit 1
+    </select>
+
+    <update id="approveAuthRecord">
+        update auth_center_record
+        set status = 'passed',
+            verified = 1,
+            feedback = #{feedback},
+            action_text = '查看详情',
+            reviewed_at = now()
+        where record_id = #{recordId}
+          and auth_type = 'campus'
+          and status = 'pending'
+    </update>
+
+    <update id="rejectAuthRecord">
+        update auth_center_record
+        set status = 'rejected',
+            verified = 0,
+            feedback = #{feedback},
+            action_text = '重新提交',
+            reviewed_at = now()
+        where record_id = #{recordId}
+          and auth_type = 'campus'
+          and status = 'pending'
+    </update>
+
+    <update id="updateProfileVerified">
+        update user_profile
+        set verified = #{verified},
+            verify_status = #{verifyStatus}
+        <if test="realName != null and realName != ''">
+          , real_name = #{realName}
+        </if>
+        where user_id = #{userId}
+    </update>
+
+    <update id="updateHomeUserSummaryVerified">
+        update home_user_summary
+        set verified = #{verified}
+        where user_id = #{userId}
+    </update>
+
+    <select id="selectAnnouncements" resultType="map">
+        select
+            announcement_id as announcementId,
+            title,
+            content,
+            status,
+            created_by as createdBy,
+            created_at as createdAt,
+            updated_at as updatedAt
+        from admin_announcement
+        order by updated_at desc, announcement_id desc
+    </select>
+
+    <select id="selectAnnouncementById" resultType="map">
+        select
+            announcement_id as announcementId,
+            title,
+            content,
+            status,
+            created_by as createdBy,
+            created_at as createdAt,
+            updated_at as updatedAt
+        from admin_announcement
+        where announcement_id = #{announcementId}
+        limit 1
+    </select>
+
+    <insert id="insertAnnouncement">
+        insert into admin_announcement
+        (title, content, status, created_by)
+        values
+        (#{title}, #{content}, #{status}, #{adminId})
+    </insert>
+
+    <update id="updateAnnouncement">
+        update admin_announcement
+        set title = #{title},
+            content = #{content},
+            status = #{status}
+        where announcement_id = #{announcementId}
+    </update>
+
+    <delete id="deleteAnnouncement">
+        delete from admin_announcement
+        where announcement_id = #{announcementId}
+    </delete>
+
+    <select id="selectCategories" resultType="map">
+        select
+            id,
+            plaza_key as plazaKey,
+            category_name as categoryName,
+            enabled,
+            sort_weight as sortWeight
+        from home_plaza_category
+        order by plaza_key asc, sort_weight asc, id asc
+    </select>
+
+    <select id="selectCategoryById" resultType="map">
+        select
+            id,
+            plaza_key as plazaKey,
+            category_name as categoryName,
+            enabled,
+            sort_weight as sortWeight
+        from home_plaza_category
+        where id = #{categoryId}
+        limit 1
+    </select>
+
+    <insert id="insertCategory">
+        insert into home_plaza_category
+        (plaza_key, category_name, enabled, sort_weight)
+        values
+        (#{plazaKey}, #{categoryName}, 1, #{sortWeight})
+    </insert>
+
+    <update id="updateCategory">
+        update home_plaza_category
+        set plaza_key = #{plazaKey},
+            category_name = #{categoryName},
+            sort_weight = #{sortWeight}
+        where id = #{categoryId}
+    </update>
+
+    <update id="updateCategoryEnabled">
+        update home_plaza_category
+        set enabled = #{enabled}
+        where id = #{categoryId}
+    </update>
+
+    <insert id="insertSystemMessage">
+        insert into admin_system_message
+        (target_type, target_user_id, title, content, created_by)
+        values
+        (#{targetType}, #{targetUserId}, #{title}, #{content}, #{adminId})
+    </insert>
+
+    <insert id="insertOperationLog">
+        insert into admin_operation_log
+        (admin_id, action, target_type, target_id, detail)
+        values
+        (#{adminId}, #{action}, #{targetType}, #{targetId}, #{detail})
+    </insert>
+
+    <select id="countOperationLogs" resultType="int">
+        select count(1)
+        from admin_operation_log
+    </select>
+
+    <select id="selectOperationLogs" resultType="map">
+        select
+            l.log_id as logId,
+            l.admin_id as adminId,
+            a.username,
+            l.action,
+            l.target_type as targetType,
+            l.target_id as targetId,
+            l.detail,
+            l.created_at as createdAt
+        from admin_operation_log l
+        left join admin_account a on a.admin_id = l.admin_id
+        order by l.created_at desc, l.log_id desc
+        limit #{size} offset #{offset}
+    </select>
+
+    <select id="countTodayUsers" resultType="int">
+        select 0
+    </select>
+
+    <select id="countPendingPosts" resultType="int">
+        select count(1)
+        from home_post
+        where review_status = 'pending'
+          and deleted = 0
+    </select>
+
+    <select id="countPendingReports" resultType="int">
+        select count(1)
+        from home_post_report
+        where status = 'pending'
+    </select>
+
+    <select id="countPendingAuthRecords" resultType="int">
+        select count(1)
+        from auth_center_record
+        where auth_type = 'campus'
+          and status = 'pending'
+    </select>
+
+    <select id="countTotalUsers" resultType="int">
+        select count(1)
+        from user_account
+    </select>
+
+    <select id="countTotalPosts" resultType="int">
+        select count(1)
+        from home_post
+        where deleted = 0
+    </select>
+</mapper>

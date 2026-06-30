@@ -4,6 +4,10 @@ export const login = (data) => {
   return axios.post('/api/auth/login', data)
 }
 
+export const adminLogin = (data) => {
+  return axios.post('/api/admin/auth/login', data)
+}
+
 export const register = (data) => {
   return axios.post('/api/auth/register', data)
 }
